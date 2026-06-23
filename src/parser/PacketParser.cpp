@@ -87,7 +87,7 @@ void PacketParser::parsePacket(const std::vector<uint8_t>& data) {
                       << m_currentTyre << std::flush;
         }
         else {
-            std::cerr << "ERROR: Packet dimension not comform" << std::endl;
+            std::cerr << "[Car Telemetry Packet] ERROR: packet dimension not comform" << std::endl;
         }
     }
     else if(header.m_packetId == 7) { //ID 7 = Car Status Packet
@@ -100,6 +100,9 @@ void PacketParser::parsePacket(const std::vector<uint8_t>& data) {
             //Extracting tyres type and store it in class variable
             uint8_t tyreId = status.m_carStatusData[playerIndex].m_visualTyreCompound;
             m_currentTyre = getTyreName(tyreId);
+        }
+        else {
+            std::cerr << "[Car Status Packet] ERROR: packet dimension not comform" << std::endl;
         }
 
     }
