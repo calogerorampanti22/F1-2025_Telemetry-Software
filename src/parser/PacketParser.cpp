@@ -4,6 +4,34 @@
 #include "PacketParser.h"
 #include "F1Structs.h"
 
+// Function which convert tyre ID in colored text
+std::string PacketParser::getTyreName(uint8_t visualCompound) {
+    switch(visualCompound) {
+        case 16: return "\033[31m(S)\033[0m";   // Soft Tyres (Red)
+        case 17: return "\033[33m(M)\033[0m";   // Medium Tyres (Yellow)
+        case 18: return "\033[37m(H)\033[0m";   // Hard Tyres (White)
+        case 7:  return "\033[32m(I)\033[0m";   // Intermedium Tyres (Green)
+        case 8:  return "\033[34m(W)\033[0m";   // Wet Tyres (Blue)
+        default: return "N/D";
+    }
+}
+
+char PacketParser::getGear(int8_t carGear) {
+    switch(carGear) {
+        case -1: return 'R'; // Reverse Gear
+        case 0: return 'N';  // Neutral Gear
+        case 1: return '1';  // 1st Gear
+        case 2: return '2';  // 2nd Gear
+        case 3: return '3';  // 3rd Gear
+        case 4: return '4';  // 4th Gear
+        case 5: return '5';  // 5th Gear
+        case 6: return '6';  // 6th Gear
+        case 7: return '7';  // 7th Gear
+        case 8: return '8';  // 8th Gear
+        default: return 'E'; // Error
+    }
+}
+
 void PacketParser::parsePacket(const std::vector<uint8_t>& data) {
     // Security check: The packet must contain almost the header
     if(data.size() < sizeof(PacketHeader)) {
@@ -51,38 +79,29 @@ void PacketParser::parsePacket(const std::vector<uint8_t>& data) {
             const auto& myCar = telemetry.m_carTelemetryData[playerIndex];
         
             // Print values
-            std::cout << "\r[TELEMETRY] Gear: " << (int)myCar.m_gear
+            std::cout << "\r[TELEMETRY] Gear: " << getGear(myCar.m_gear)
                       << "| RPM: " << myCar.m_engineRPM 
                       << "| Speed: " << myCar.m_speed << " km/h"
                       << "| Acceleration: " << (myCar.m_throttle * 100) << "%" 
-                      << "| Braking: " << (myCar.m_brake * 100) << "%" << std::flush;
+                      << "| Braking: " << (myCar.m_brake * 100) << "% "
+                      << m_currentTyre << std::flush;
         }
         else {
             std::cerr << "ERROR: Packet dimension not comform" << std::endl;
         }
     }
     else if(header.m_packetId == 7) { //ID 7 = Car Status Packet
-        if(data.size() == sizeof(CarStatusData)) {
-            PacketCarStatusData carStatusData;
-            std::memcpy(&carStatusData, data.data(), sizeof(PacketCarStatusData));
+        if(data.size() == sizeof(PacketCarStatusData)) {
+            PacketCarStatusData status;
+            std::memcpy(&status, data.data(), sizeof(PacketCarStatusData));
 
             uint8_t playerIndex = header.m_playerCarIndex;
-            const auto& myCar = carStatusData.m_carStatusData[playerIndex];
-
-            // Print Tyre type
-            if(myCar.m_visualTyreCompound == 16) { // Soft tyres
-                std::cout << "\r\033[31mS\033[0m" << std::flush;
-            }
-            if(myCar.m_visualTyreCompound == 17) { // Medium tyres
-                std::cout << "\r\033[33mM\033[0m" << std::flush;
-            }
-            if(myCar.m_visualTyreCompound == 18) { // Hard tyres
-                std::cout << "\r\033[0mH\033[0m" << std::flush;
-            }
-            else {
-                std::cout << "N/D" << std::flush;
-            }
+            
+            //Extracting tyres type and store it in class variable
+            uint8_t tyreId = status.m_carStatusData[playerIndex].m_visualTyreCompound;
+            m_currentTyre = getTyreName(tyreId);
         }
+
     }
     else if(header.m_packetId == 8) { //ID 8 = Final Classification Packet
         // TODO
