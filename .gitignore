@@ -1,0 +1,85 @@
+# ==========================================
+# C++ e File Binari
+# ==========================================
+# Ignora gli eseguibili compilati
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+
+# Ignora librerie statiche e dinamiche
+*.a
+*.o
+*.so
+*.dylib
+*.dll
+*.lib
+
+# ==========================================
+# CMake
+# ==========================================
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+Testing/
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps/
+
+# ==========================================
+# Cartelle di Build
+# ==========================================
+# Ignora le cartelle standard dove viene generato l'eseguibile
+build/
+build-*/
+out/
+bin/
+obj/
+
+# ==========================================
+# Script di Mocking e Test (Python)
+# ==========================================
+# Nel caso tu stia usando lo script Python per simulare la telemetria
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+
+# ==========================================
+# IDE e Editor
+# ==========================================
+# VS Code
+.vscode/
+*.code-workspace
+
+# CLion / IntelliJ
+.idea/
+cmake-build-*/
+
+# Visual Studio
+.vs/
+*.sln
+*.suo
+*.user
+*.vcxproj.user
+
+# ==========================================
+# File di Sistema Operativo
+# ==========================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
