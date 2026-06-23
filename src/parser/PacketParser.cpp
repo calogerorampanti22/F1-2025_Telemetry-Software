@@ -54,7 +54,8 @@ void PacketParser::parsePacket(const std::vector<uint8_t>& data) {
             std::cout << "\r[TELEMETRY] Gear: " << (int)myCar.m_gear
                       << "| RPM: " << myCar.m_engineRPM 
                       << "| Speed: " << myCar.m_speed << " km/h"
-                      << "| Acceleration: " << (myCar.m_throttle * 100) << "%" << std::flush;
+                      << "| Acceleration: " << (myCar.m_throttle * 100) << "%" 
+                      << "| Braking: " << (myCar.m_brake * 100) << "%" << std::flush;
         }
         else {
             std::cerr << "ERROR: Packet dimension not comform" << std::endl;
