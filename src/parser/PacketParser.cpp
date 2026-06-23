@@ -51,10 +51,10 @@ void PacketParser::parsePacket(const std::vector<uint8_t>& data) {
             const auto& myCar = telemetry.m_carTelemetryData[playerIndex];
         
             // Print values
-            std::cout << "[TELEMETRY] Gear: " << (int)myCar.m_gear << std::endl
-                      << "| RPM: " << myCar.m_engineRPM << std::endl
-                      << "| Speed: " << myCar.m_speed << " km/h" << std::endl
-                      << "| Acceleration: " << (myCar.m_throttle * 100) << "%" << std::endl;
+            std::cout << "\r[TELEMETRY] Gear: " << (int)myCar.m_gear
+                      << "| RPM: " << myCar.m_engineRPM 
+                      << "| Speed: " << myCar.m_speed << " km/h"
+                      << "| Acceleration: " << (myCar.m_throttle * 100) << "%" << std::flush;
         }
         else {
             std::cerr << "ERROR: Packet dimension not comform" << std::endl;

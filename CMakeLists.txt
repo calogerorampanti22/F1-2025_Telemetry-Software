@@ -16,6 +16,7 @@ endif()
 add_executable(f1_telemetry 
     src/main.cpp
     src/network/UdpListener.cpp
+    src/parser/PacketParser.cpp
 )
 
 # Tell to compiler where finds .h files when we use #include
