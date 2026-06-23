@@ -62,8 +62,27 @@ void PacketParser::parsePacket(const std::vector<uint8_t>& data) {
         }
     }
     else if(header.m_packetId == 7) { //ID 7 = Car Status Packet
-        // TODO
-        std::cout << "[Car Status Packet] Not implemented yet" << std::endl;
+        if(data.size() == sizeof(CarStatusData)) {
+            PacketCarStatusData carStatusData;
+            std::memcpy(&carStatusData, data.data(), sizeof(PacketCarStatusData));
+
+            uint8_t playerIndex = header.m_playerCarIndex;
+            const auto& myCar = carStatusData.m_carStatusData[playerIndex];
+
+            // Print Tyre type
+            if(myCar.m_visualTyreCompound == 16) { // Soft tyres
+                std::cout << "\r\033[31mS\033[0m" << std::flush;
+            }
+            if(myCar.m_visualTyreCompound == 17) { // Medium tyres
+                std::cout << "\r\033[33mM\033[0m" << std::flush;
+            }
+            if(myCar.m_visualTyreCompound == 18) { // Hard tyres
+                std::cout << "\r\033[0mH\033[0m" << std::flush;
+            }
+            else {
+                std::cout << "N/D" << std::flush;
+            }
+        }
     }
     else if(header.m_packetId == 8) { //ID 8 = Final Classification Packet
         // TODO
