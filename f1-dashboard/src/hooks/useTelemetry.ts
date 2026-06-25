@@ -42,7 +42,7 @@ export function useTelemetry() {
     const wsRef = useRef<WebSocket | null>(null);
 
     useEffect(() => {
-        const serverIp = window.location.hostname;
+        const serverIp = import.meta.env.VITE_SERVER_IP || window.location.hostname;
         wsRef.current = new WebSocket(`ws://${serverIp}:8080/telemetry`);
 
         wsRef.current.onopen = () => setIsConnected(true);
