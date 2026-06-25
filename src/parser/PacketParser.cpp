@@ -80,15 +80,6 @@ std::string PacketParser::parsePacketToJson(const std::vector<uint8_t>& data) {
                                 myCar.m_surfaceType[3]
                                };
 
-
-
-            std::cout << "\r[TELEMETRY] Gear: " << myCar.m_gear
-                      << "| RPM: " << myCar.m_engineRPM 
-                      << "| Speed: " << myCar.m_speed << " km/h"
-                      << "| Acceleration: " << (myCar.m_throttle * 100) << "%" 
-                      << "| Braking: " << (myCar.m_brake * 100) << "% "
-                      << m_currentTyre << std::flush;
-
             return j.dump();
         }
         else {
@@ -102,9 +93,9 @@ std::string PacketParser::parsePacketToJson(const std::vector<uint8_t>& data) {
 
             uint8_t playerIndex = header.m_playerCarIndex;
             
-            //Extracting tyres type and store it in class variable
+            //Extracting tyres type and store it in a class variable
             uint8_t tyreId = status.m_carStatusData[playerIndex].m_visualTyreCompound;
-            m_currentTyre = getTyreName(tyreId);
+            m_currentTyre = tyreId;
 
             return "";
         }
@@ -115,35 +106,27 @@ std::string PacketParser::parsePacketToJson(const std::vector<uint8_t>& data) {
     }
     else if(header.m_packetId == 8) { //ID 8 = Final Classification Packet
         // TODO
-        std::cout << "[Final Classification Packet] Not implemented yet" << std::endl;
     }
     else if(header.m_packetId == 9) { //ID 9 = Lobby Info Packet
         // TODO
-        std::cout << "[Lobby Info Packet] Not implemented yet" << std::endl;
     }
     else if(header.m_packetId == 10) { //ID 10 = Car Damage Packet
         // TODO
-        std::cout << "[Car Damage Packet] Not implemented yet" << std::endl;
     }
     else if(header.m_packetId == 11) { //ID 11 = Session History Packet
         // TODO
-        std::cout << "[Session History Packet] Not implemented yet" << std::endl;
     }
     else if(header.m_packetId == 12) { //ID 12 = Tyre Sets Packet
         // TODO
-        std::cout << "[Tyre Sets Packet] Not implemented yet" << std::endl;
     }
     else if(header.m_packetId == 13) { //ID 13 = Motion Ex Packet
         // TODO
-        std::cout << "[Motion Ex Packet] Not implemented yet" << std::endl;
     }
     else if(header.m_packetId == 14) { //ID 14 = Time Trial Packet
         // TODO
-        std::cout << "[Time Trial Packet] Not implemented yet" << std::endl;
     }
     else if(header.m_packetId == 15) { //ID 15 = Lap Positions Packet
         // TODO
-        std::cout << "[Lap Positions Packet] Not implemented yet" << std::endl;
     }
 
     return "";
