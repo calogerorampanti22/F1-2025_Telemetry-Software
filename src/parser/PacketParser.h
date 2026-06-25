@@ -2,11 +2,12 @@
 
 #include <vector>
 #include <cstdint>
+#include <string>
 
 class PacketParser {
     public:
         // It receives raw bytes from UDP listener and decodes them
-        void parsePacket(const std::vector<uint8_t>& data);
+        std::string parsePacketToJson(const std::vector<uint8_t>& data);
     
     private:
         // Last tyres known
@@ -15,6 +16,4 @@ class PacketParser {
         // Helper function to get tyre name and tyre color
         std::string getTyreName(uint8_t visualCompound);
 
-        //Helper function to get gear
-        char getGear(int8_t carGear);
 };
