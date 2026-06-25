@@ -35,7 +35,7 @@ FetchContent_MakeAvailable(Crow)
 # Defining executable e source files to compile
 add_executable(f1_telemetry 
     src/main.cpp
-    src/network/UdpListener.cpp
+    src/network/UDPListener.cpp
     src/parser/PacketParser.cpp
 )
 
