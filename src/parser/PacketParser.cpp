@@ -51,7 +51,7 @@ std::string PacketParser::parsePacketToJson(const std::vector<uint8_t>& data) {
             j["type"] = "telemetry";
             j["speed"] = myCar.m_speed;
             j["throttle"] = myCar.m_throttle;
-            j["streer"] = myCar.m_steer;
+            j["steer"] = myCar.m_steer;
             j["brake"] = myCar.m_brake;
             j["clutch"] = myCar.m_clutch;
             j["gear"] = myCar.m_gear;
