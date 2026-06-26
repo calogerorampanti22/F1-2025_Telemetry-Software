@@ -59,6 +59,12 @@ std::string PacketParser::parsePacketToJson(const std::vector<uint8_t>& data) {
             telemetryJSONObject["drs"] = myCar.m_drs;
             telemetryJSONObject["revLightsPercent"] = myCar.m_revLightsPercent;
             telemetryJSONObject["revLightsBitValue"] = myCar.m_revLightsBitValue;
+            telemetryJSONObject["brakesTemperature"] = {
+                                                        myCar.m_brakesTemperature[0],
+                                                        myCar.m_brakesTemperature[1],
+                                                        myCar.m_brakesTemperature[2],
+                                                        myCar.m_brakesTemperature[3],
+                                                        };
             telemetryJSONObject["tyresSurfaceTemperature"] = { 
                                                                myCar.m_tyresSurfaceTemperature[0],
                                                                myCar.m_tyresSurfaceTemperature[1],
@@ -71,6 +77,9 @@ std::string PacketParser::parsePacketToJson(const std::vector<uint8_t>& data) {
                                                              myCar.m_tyresInnerTemperature[2],
                                                              myCar.m_tyresInnerTemperature[3]
                                                            };
+
+            telemetryJSONObject["engineTemperature"] = myCar.m_engineTemperature;                                            
+            
             telemetryJSONObject["tyresPressure"] = { 
                                                      myCar.m_tyresPressure[0],
                                                      myCar.m_tyresPressure[1],
