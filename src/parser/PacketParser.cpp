@@ -112,6 +112,7 @@ std::string PacketParser::parsePacketToJson(const std::vector<uint8_t>& data) {
 
             // Create JSON Object
             nlohmann::json statusJSONObject;
+            statusJSONObject["type"] = "carStatus";
             statusJSONObject["tractionControl"] = myCar.m_tractionControl;
             statusJSONObject["antiLockBrakes"] = myCar.m_antiLockBrakes;
             statusJSONObject["fuelMix"] = myCar.m_fuelMix;
