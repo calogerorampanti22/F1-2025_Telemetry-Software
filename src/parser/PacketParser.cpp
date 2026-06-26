@@ -124,6 +124,8 @@ std::string PacketParser::parsePacketToJson(const std::vector<uint8_t>& data) {
             statusJSONObject["enginePowerMGUK"] = myCar.m_enginePowerMGUK;
             statusJSONObject["ersStoreEnergy"] = myCar.m_ersStoreEnergy;
             statusJSONObject["ersDeployMode"] = myCar.m_ersDeployMode;
+            statusJSONObject["ersHarvestedThisLapMGUK"] = myCar.m_ersHarvestedThisLapMGUK;
+            statusJSONObject["ersHarvestedThisLapMGUH"] = myCar.m_ersHarvestedThisLapMGUH;
             statusJSONObject["ersDeployedThisLap"] = myCar.m_ersDeployedThisLap;
             statusJSONObject["networkPaused"] = myCar.m_networkPaused;
 
