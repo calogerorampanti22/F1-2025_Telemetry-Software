@@ -12,7 +12,9 @@ export interface TelemetryData {
     drs: boolean;
     revLightsPercent: number;
     revLightsBitValue: number;
+    engineTemperature: number;
 
+    brakesTemperature: [number, number, number, number];
     tyresSurfaceTemperature: [number, number, number, number];
     tyresInnerTemperature: [number, number, number, number];
     tyresPressure: [number, number, number, number];
@@ -64,6 +66,8 @@ export function useTelemetry() {
         drs: false,
         revLightsPercent: 0,
         revLightsBitValue: 0,
+        engineTemperature: 0,
+        brakesTemperature: [0, 0, 0, 0],
         tyresSurfaceTemperature: [0, 0, 0, 0],
         tyresInnerTemperature: [0, 0, 0, 0],
         tyresPressure: [0, 0, 0, 0],
@@ -125,6 +129,8 @@ export function useTelemetry() {
                     drs: parsed.drs,
                     revLightsPercent: parsed.revLightsPercent,
                     revLightsBitValue: parsed.revLightsBitValue,
+                    engineTemperature: parsed.engineTemperature,
+                    brakesTemperature: parsed.brakesTemperature,
                     tyresSurfaceTemperature: parsed.tyresSurfaceTemperature,
                     tyresInnerTemperature: parsed.tyresInnerTemperature,
                     tyresPressure: parsed.tyresPressure,
