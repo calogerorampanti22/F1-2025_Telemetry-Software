@@ -1,6 +1,8 @@
 import React from 'react';
 
 interface Props {
+  engineTemperature: number;
+  brakesTemperature: [number, number, number, number];
   tyresSurfaceTemps: [number, number, number, number];
   tyresInnerTemps: [number, number, number, number];
   tyresPressure: [number, number, number, number];
@@ -10,10 +12,10 @@ interface Props {
 
 // Index order: 0: RL, 1: RR, 2: FL, 3: FR
 
-export const CarMonitor: React.FC<Props> = ({ tyresSurfaceTemps, tyresInnerTemps, tyresPressure, tyresCompound, tyresAgeLaps }) => {
+export const CarMonitor: React.FC<Props> = ({ engineTemperature, brakesTemperature, tyresSurfaceTemps, tyresInnerTemps, tyresPressure, tyresCompound, tyresAgeLaps }) => {
   const getTempColor = (temp: number) => {
-    if (temp > 105) return '#ef4444';
-    if (temp < 80) return '#3b82f6';
+    if (temp > 130) return '#ef4444';
+    if (temp < 90) return '#3b82f6';
     return '#22c55e';
   };
 
@@ -33,9 +35,6 @@ export const CarMonitor: React.FC<Props> = ({ tyresSurfaceTemps, tyresInnerTemps
     }
   }
 
-  const placeholderBrakeTemps = [678, 678, 657, 656];
-  const placeholderEngineTemp = 110;
-
   return (
     <section style={containerStyle}>
       <div style={layoutGrid}>
@@ -45,13 +44,13 @@ export const CarMonitor: React.FC<Props> = ({ tyresSurfaceTemps, tyresInnerTemps
           <div style={tyreDataBlock}>
             <DataRow label="SURF" value={tyresSurfaceTemps[2]} type="surf" color={getTempColor(tyresSurfaceTemps[2])} />
             <DataRow label="CORE" value={tyresInnerTemps[2]} type="core" color={getTempColor(tyresInnerTemps[2])} />
-            <DataRow label="BRK" value={placeholderBrakeTemps[2]} type="brake" color={getBrakeColor(placeholderBrakeTemps[2])} />
+            <DataRow label="BRK" value={brakesTemperature[2]} type="brake" color={getBrakeColor(brakesTemperature[2])} />
             <DataRow label="PRES" value={tyresPressure[2]} type="pres" color="white" />
           </div>
           <div style={tyreDataBlock}>
             <DataRow label="SURF" value={tyresSurfaceTemps[0]} type="surf" color={getTempColor(tyresSurfaceTemps[0])} />
             <DataRow label="CORE" value={tyresInnerTemps[0]} type="core" color={getTempColor(tyresInnerTemps[0])} />
-            <DataRow label="BRK" value={placeholderBrakeTemps[0]} type="brake" color={getBrakeColor(placeholderBrakeTemps[0])} />
+            <DataRow label="BRK" value={brakesTemperature[0]} type="brake" color={getBrakeColor(brakesTemperature[0])} />
             <DataRow label="PRES" value={tyresPressure[0]} type="pres" color="white" />
           </div>
         </div>
@@ -77,13 +76,13 @@ export const CarMonitor: React.FC<Props> = ({ tyresSurfaceTemps, tyresInnerTemps
                 <line x1="139" y1="232" x2="115" y2="220" />
               </g>
               {/* MOTORE */}
-              <path d="M 85,170 L 115,170 L 110,210 L 90,210 Z" fill={getTempColor(placeholderEngineTemp)} stroke="#111" strokeWidth="2" />
-              <text x="100" y="160" textAnchor="middle" fill="#fff" fontSize="16" fontWeight="bold">{placeholderEngineTemp}°C</text>
+              <path d="M 85,170 L 115,170 L 110,210 L 90,210 Z" fill={getTempColor(engineTemperature)} stroke="#111" strokeWidth="2" />
+              <text x="100" y="160" textAnchor="middle" fill="#fff" fontSize="16" fontWeight="bold">{engineTemperature}°C</text>
               {/* FRENI */}
-              <rect x="58" y="82" width="6" height="31" rx="2" fill={getBrakeColor(placeholderBrakeTemps[2])} />
-              <rect x="136" y="82" width="6" height="31" rx="2" fill={getBrakeColor(placeholderBrakeTemps[3])} />
-              <rect x="58" y="217" width="6" height="31" rx="2" fill={getBrakeColor(placeholderBrakeTemps[0])} />
-              <rect x="136" y="217" width="6" height="31" rx="2" fill={getBrakeColor(placeholderBrakeTemps[1])} />
+              <rect x="58" y="82" width="6" height="31" rx="2" fill={getBrakeColor(brakesTemperature[2])} />
+              <rect x="136" y="82" width="6" height="31" rx="2" fill={getBrakeColor(brakesTemperature[3])} />
+              <rect x="58" y="217" width="6" height="31" rx="2" fill={getBrakeColor(brakesTemperature[0])} />
+              <rect x="136" y="217" width="6" height="31" rx="2" fill={getBrakeColor(brakesTemperature[1])} />
               {/* GOMME */}
               <rect x="37" y="77" width="18" height="41" rx="3" fill={getTempColor(tyresInnerTemps[2])} stroke={getTempColor(tyresSurfaceTemps[2])} strokeWidth="4" />
               <rect x="145" y="77" width="18" height="41" rx="3" fill={getTempColor(tyresInnerTemps[3])} stroke={getTempColor(tyresSurfaceTemps[3])} strokeWidth="4" />
@@ -108,13 +107,13 @@ export const CarMonitor: React.FC<Props> = ({ tyresSurfaceTemps, tyresInnerTemps
           <div style={tyreDataBlock}>
             <DataRow label="SURF" value={tyresSurfaceTemps[3]} type="surf" color={getTempColor(tyresSurfaceTemps[3])} align="left" />
             <DataRow label="CORE" value={tyresInnerTemps[3]} type="core" color={getTempColor(tyresInnerTemps[3])} align="left" />
-            <DataRow label="BRK" value={placeholderBrakeTemps[3]} type="brake" color={getBrakeColor(placeholderBrakeTemps[3])} align="left" />
+            <DataRow label="BRK" value={brakesTemperature[3]} type="brake" color={getBrakeColor(brakesTemperature[3])} align="left" />
             <DataRow label="PRES" value={tyresPressure[3]} type="pres" color="white" align="left" />
           </div>
           <div style={tyreDataBlock}>
             <DataRow label="SURF" value={tyresSurfaceTemps[1]} type="surf" color={getTempColor(tyresSurfaceTemps[1])} align="left" />
             <DataRow label="CORE" value={tyresInnerTemps[1]} type="core" color={getTempColor(tyresInnerTemps[1])} align="left" />
-            <DataRow label="BRK" value={placeholderBrakeTemps[1]} type="brake" color={getBrakeColor(placeholderBrakeTemps[1])} align="left" />
+            <DataRow label="BRK" value={brakesTemperature[1]} type="brake" color={getBrakeColor(brakesTemperature[1])} align="left" />
             <DataRow label="PRES" value={tyresPressure[1]} type="pres" color="white" align="left" />
           </div>
         </div>

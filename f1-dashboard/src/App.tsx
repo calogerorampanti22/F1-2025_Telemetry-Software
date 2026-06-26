@@ -25,7 +25,9 @@ function App() {
         />
         
         {/* MONITORAGGIO VETTURA (Temperature, Gomme, Freni) */}
-        <CarMonitor 
+        <CarMonitor
+          engineTemperature = {data.engineTemperature}
+          brakesTemperature = {data.brakesTemperature}
           tyresSurfaceTemps = {data.tyresSurfaceTemperature} 
           tyresInnerTemps = {data.tyresInnerTemperature}
           tyresPressure = {data.tyresPressure}
