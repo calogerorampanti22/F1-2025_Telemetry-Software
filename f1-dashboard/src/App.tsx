@@ -8,27 +8,29 @@ function App() {
   const { data, isConnected } = useTelemetry();
 
   return (
-    <div style={containerStyle}>
-      <StatusHeader connected={isConnected} />
+    <div style = {containerStyle}>
+      <StatusHeader connected = {isConnected} />
       
-      <main style={dashboardLayout}>
+      <main style = {dashboardLayout}>
         
         {/* HUD PRINCIPALE (Motore, Marce, Pedali, DRS) */}
         <GearIndicator 
-          gear={data.gear} 
-          speed={data.speed}
-          rpm={data.engineRPM} 
-          revPercent={data.revLightsPercent} 
-          throttle={data.throttle} 
-          brake={data.brake} 
-          drs={data.drs}
+          gear = {data.gear} 
+          speed = {data.speed}
+          rpm = {data.engineRPM} 
+          revPercent = {data.revLightsPercent} 
+          throttle = {data.throttle} 
+          brake = {data.brake} 
+          drs = {data.drs}
         />
         
         {/* MONITORAGGIO VETTURA (Temperature, Gomme, Freni) */}
         <CarMonitor 
-          surfaceTemps={data.tyresSurfaceTemperature} 
-          innerTemps={data.tyresInnerTemperature}
-          pressures={data.tyresPressure}
+          tyresSurfaceTemps = {data.tyresSurfaceTemperature} 
+          tyresInnerTemps = {data.tyresInnerTemperature}
+          tyresPressure = {data.tyresPressure}
+          tyresCompound = {data.carStatus.visualTyreCompound}
+          tyresAgeLaps = {data.carStatus.tyresAgeLaps}
         />
 
       </main>
