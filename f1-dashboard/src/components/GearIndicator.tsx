@@ -86,7 +86,7 @@ const centralSection: React.CSSProperties = {
   flexDirection: 'row', 
   alignItems: 'center', 
   justifyContent: 'center', 
-  padding: '40px', 
+  padding: '15px', 
   backgroundColor: '#111', 
   borderRadius: '20px', 
   border: '1px solid #222',
