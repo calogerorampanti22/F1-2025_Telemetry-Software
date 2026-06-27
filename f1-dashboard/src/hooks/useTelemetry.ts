@@ -1,5 +1,71 @@
 import { useState, useEffect, useRef } from 'react';
 
+// Function which returns formatted lap time (mm:ss.ms)
+export const formatLapTime = (ms: number): string => {
+    if (!ms || ms === 0 || ms === Infinity) return "--:--.---"; // If value is abnormal return placeholder "--.--.---"
+    const minutes = Math.floor(ms / 60000); // Obtain minutes part
+    const seconds = Math.floor((ms % 60000) / 1000); // Obtain seconds part
+    const milliseconds = ms % 1000; // Obtain millis part
+    return `${minutes}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`; // Return formatted string
+};
+
+export const formatSectorTime = (ms: number): string => {
+    if (!ms || ms === 0 || ms === Infinity) return "";
+    const minutes = Math.floor(ms / 60000);
+    const seconds = Math.floor((ms % 60000) / 1000);
+    const milliseconds = ms % 1000;
+    if (minutes > 0) return `${minutes}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
+    return `${seconds}.${milliseconds.toString().padStart(3, '0')}`;
+};
+
+export const formatDelta = (ms: number): string => {
+    if (ms === 0 || ms === Infinity || isNaN(ms)) return "";
+    const sign = ms > 0 ? '+' : '-';
+    const absMs = Math.abs(ms);
+    const seconds = Math.floor(absMs / 1000);
+    const milliseconds = absMs % 1000;
+    return `${sign}${seconds}.${milliseconds.toString().padStart(3, '0')}`;
+};
+
+export interface SectorDisplay {
+    status: 'none' | 'yellow' | 'green' | 'purple';
+    timeStr: string;
+    deltaStr: string;
+    deltaColor: string;
+}
+
+// Sector Evaluator: Decide sector bar color based on other sector times
+export const evaluateSector = (timeMs: number, bestMs: number, gridBestMs: number): SectorDisplay => {
+    if (!timeMs || timeMs === 0) return { status: 'none', timeStr: '', deltaStr: '', deltaColor: '' };
+
+    let status: 'none' | 'yellow' | 'green' | 'purple' = 'yellow';
+    
+    // 1. FUCSIA: Scatta SOLO se il tempo è inferiore o uguale al record della griglia
+    // (Aggiungiamo il controllo gridBestMs > 0 per evitare che scatti quando è a zero)
+    if (gridBestMs > 0 && timeMs <= gridBestMs) {
+        status = 'purple';
+    } 
+    // 2. VERDE: Miglioramento del proprio record personale (Personal Best)
+    else if (timeMs <= bestMs || bestMs === Infinity) {
+        status = 'green';
+    }
+
+    // Il delta parziale visualizzato rimane calcolato rispetto al proprio miglior tempo personale
+    const deltaMs = timeMs - bestMs;
+    const deltaStr = bestMs === Infinity ? '' : formatDelta(deltaMs);
+    
+    let deltaColor = '#eab308'; // Giallo
+    if (status === 'purple') deltaColor = '#a855f7'; // Fucsia
+    if (status === 'green') deltaColor = '#22c55e'; // Verde
+
+    return {
+        status,
+        timeStr: formatSectorTime(timeMs),
+        deltaStr,
+        deltaColor
+    };
+};
+
 // Telemetry Data Interface
 export interface TelemetryData {
     speed: number;
@@ -22,6 +88,9 @@ export interface TelemetryData {
 
     // Car Status object
     carStatus: CarStatusData;
+
+    // Lap Data object
+    lapData: LapData;
 }
 
 // Car Status Data Interface
@@ -51,6 +120,46 @@ export interface CarStatusData {
     ersHarvestedThisLapMGUH: number;
     ersDeployedThisLap: number;
     networkPaused: number;
+}
+
+// Lap Data Interface
+export interface LapData {
+    lastLapTimeInMS: number;
+    currentLapTimeInMS: number;
+    sector1TimeMSPart: number;
+    sector1TimeMinutesPart: number;
+    sector2TimeMSPart: number;
+    sector2TimeMinutesPart: number;
+    deltaToCarInFrontMSPart: number;
+    deltaToCarInFrontMinutesPart: number;
+    deltaToRaceLeaderMSPart: number;
+    deltaToRaceLeaderMinutesPart: number;
+    lapDistance: number;
+    totalDistance: number;
+    safetyCarDelta: number;
+    carPosition: number;
+    currentLapNum: number;
+    pitStatus: number;
+    numPitStops: number;
+    sector: number;
+    currentLapInvalid: number;
+    penalties: number;
+    totalWarnings: number;
+    cornerCuttingWarnings: number;
+    numUnservedDriveThroughPens: number;
+    numUnservedStopGoPens: number;
+    gridPosition: number;
+    driverStatus: number;
+    resultStatus: number;
+    pitLaneTimerActive: number;
+    pitLaneTimeInLaneInMS: number;
+    pitStopTimerInMS: number;
+    pitStopShouldServePen: number;
+    speedTrapFastestSpeed: number;
+    speedTrapFastestLap: number;
+
+    bestLapTimeInMS: number;
+    sectorData: [SectorDisplay, SectorDisplay, SectorDisplay];
 }
 
 export function useTelemetry() {
@@ -99,12 +208,76 @@ export function useTelemetry() {
             ersHarvestedThisLapMGUH: 0,
             ersDeployedThisLap: 0,
             networkPaused: 0
+        },
+
+        lapData: {
+            lastLapTimeInMS: 0,
+            currentLapTimeInMS: 0,
+            sector1TimeMSPart: 0,
+            sector1TimeMinutesPart: 0,
+            sector2TimeMSPart: 0,
+            sector2TimeMinutesPart: 0,
+            deltaToCarInFrontMSPart: 0,
+            deltaToCarInFrontMinutesPart: 0,
+            deltaToRaceLeaderMSPart: 0,
+            deltaToRaceLeaderMinutesPart: 0,
+            lapDistance: 0,
+            totalDistance: 0,
+            safetyCarDelta: 0,
+            carPosition: 0,
+            currentLapNum: 0,
+            pitStatus: 0,
+            numPitStops: 0,
+            sector: 0,
+            currentLapInvalid: 0,
+            penalties: 0,
+            totalWarnings: 0,
+            cornerCuttingWarnings: 0,
+            numUnservedDriveThroughPens: 0,
+            numUnservedStopGoPens: 0,
+            gridPosition: 0,
+            driverStatus: 0,
+            resultStatus: 0,
+            pitLaneTimerActive: 0,
+            pitLaneTimeInLaneInMS: 0,
+            pitStopTimerInMS: 0,
+            pitStopShouldServePen: 0,
+            speedTrapFastestSpeed: 0,
+            speedTrapFastestLap: 0,
+
+            bestLapTimeInMS: 0,
+            sectorData: [
+                { status: 'none', timeStr: '', deltaStr: '', deltaColor: '' },
+                { status: 'none', timeStr: '', deltaStr: '', deltaColor: '' },
+                { status: 'none', timeStr: '', deltaStr: '', deltaColor: '' }
+            ]
         }
     });
 
     const [isConnected, setIsConnected] = useState<boolean>(false);
     const wsRef = useRef<WebSocket | null>(null);
 
+    // CASSAFORTE DEI RECORD: Mantiene i best times senza causare re-render!
+    const personalBests = useRef({
+        lap: Infinity,
+        s1: Infinity,
+        s2: Infinity,
+        s3: Infinity
+    });
+
+    const trackState = useRef({
+        lapNum: -1,
+        liveS1: null as SectorDisplay | null,
+        liveS2: null as SectorDisplay | null,
+        frozenS1: null as SectorDisplay | null,
+        frozenS2: null as SectorDisplay | null,
+        frozenS3: null as SectorDisplay | null,
+        holdUntil: 0,
+        lastS1Time: Infinity,
+        lastS2Time: Infinity,
+        lastS3Time: Infinity
+    });
+    
     useEffect(() => {
         const serverIp = import.meta.env.VITE_SERVER_IP || window.location.hostname;
         wsRef.current = new WebSocket(`ws://${serverIp}:8080/telemetry`);
@@ -166,6 +339,123 @@ export function useTelemetry() {
                         ersHarvestedThisLapMGUH: parsed.ersHarvestedThisLapMGUH,
                         ersDeployedThisLap: parsed.ersDeployedThisLap,
                         networkPaused: parsed.networkPaused
+                    }
+                }));
+            }
+            else if(parsed.type === 'lapData') {
+                const s1Time = (parsed.sector1TimeMinutesPart * 60000) + parsed.sector1TimeMSPart;
+                const s2Time = (parsed.sector2TimeMinutesPart * 60000) + parsed.sector2TimeMSPart;
+
+                // === VARIABILI COPERTINA PER IL MIGLIOR TEMPO IN GRIGLIA (IMPOSTATE A 0) ===
+                const gridBestS1 = 0;
+                const gridBestS2 = 0;
+                const gridBestS3 = 0;
+
+                // 1. FREEZE FRAME DI FINE GIRO
+                if (trackState.current.lapNum !== -1 && parsed.currentLapNum > trackState.current.lapNum) {
+                    const s3Time = parsed.lastLapTimeInMS - trackState.current.lastS1Time - trackState.current.lastS2Time;
+                    
+                    // Passiamo gridBestS3 come quarto parametro
+                    trackState.current.frozenS3 = evaluateSector(s3Time, personalBests.current.s3, gridBestS3);
+                    trackState.current.frozenS1 = trackState.current.liveS1;
+                    trackState.current.frozenS2 = trackState.current.liveS2;
+                    trackState.current.holdUntil = Date.now() + 5000;
+                    
+                    if (s3Time > 0 && s3Time < personalBests.current.s3) personalBests.current.s3 = s3Time;
+                    trackState.current.lastS3Time = s3Time;
+                    
+                    trackState.current.liveS1 = null;
+                    trackState.current.liveS2 = null;
+                }
+
+                trackState.current.lapNum = parsed.currentLapNum;
+
+                // 2. LOGICA LIVE (Scatta solo nell'istante esatto in cui il settore viene CONCLUSO)
+                const currentSector = parsed.sector;
+
+                // Calcoliamo S1 solo se siamo entrati fisicamente in S2 (currentSector === 1) 
+                // e non abbiamo ancora salvato il tempo live per questo giro
+                if (currentSector === 1 && s1Time > 0 && !trackState.current.liveS1) {
+                    trackState.current.liveS1 = evaluateSector(s1Time, personalBests.current.s1, gridBestS1);
+                    if (s1Time < personalBests.current.s1) personalBests.current.s1 = s1Time;
+                    trackState.current.lastS1Time = s1Time;
+                }
+
+                // Calcoliamo S2 solo se siamo entrati fisicamente in S3 (currentSector === 2)
+                // e non abbiamo ancora salvato il tempo live per questo giro
+                if (currentSector === 2 && s2Time > 0 && !trackState.current.liveS2) {
+                    trackState.current.liveS2 = evaluateSector(s2Time, personalBests.current.s2, gridBestS2);
+                    if (s2Time < personalBests.current.s2) personalBests.current.s2 = s2Time;
+                    trackState.current.lastS2Time = s2Time;
+                }
+
+                // Record del Giro Intero (Background)
+                if (parsed.lastLapTimeInMS > 0 && parsed.lastLapTimeInMS < personalBests.current.lap) {
+                    personalBests.current.lap = parsed.lastLapTimeInMS;
+                }
+
+                // 3. SMISTAMENTO DEI DATI DA MOSTRARE A SCHERMO
+                const emptySector: SectorDisplay = { status: 'none', timeStr: '', deltaStr: '', deltaColor: '' };
+                let s1Disp = emptySector;
+                let s2Disp = emptySector;
+                let s3Disp = emptySector;
+
+                if (Date.now() < trackState.current.holdUntil) {
+                    // Freeze attivo a fine giro: Mostra il riepilogo bloccato
+                    s1Disp = trackState.current.frozenS1 || emptySector;
+                    s2Disp = trackState.current.frozenS2 || emptySector;
+                    s3Disp = trackState.current.frozenS3 || emptySector;
+                } else {
+                    // Corsa Live: NESSUN colore mentre si percorre.
+                    // Si colora (e mostra i testi) SOLO se la variabile live è stata popolata a fine settore.
+                    s1Disp = trackState.current.liveS1 || emptySector;
+                    s2Disp = trackState.current.liveS2 || emptySector;
+                    
+                    // S3 live è sempre spento, perché il suo calcolo scatta solo 
+                    // al taglio del traguardo attivando il "Freeze" qui sopra.
+                    s3Disp = emptySector; 
+                }
+                
+                // 5. SALVATAGGIO STATO PER UI
+                setData(prev => ({
+                    ...prev,
+                    lapData: {
+                        lastLapTimeInMS: parsed.lastLapTimeInMS,
+                        currentLapTimeInMS: parsed.currentLapTimeInMS,
+                        sector1TimeMSPart: parsed.sector1TimeMSPart,
+                        sector1TimeMinutesPart: parsed.sector1TimeMinutesPart,
+                        sector2TimeMSPart: parsed.sector2TimeMSPart,
+                        sector2TimeMinutesPart: parsed.sector2TimeMinutesPart,
+                        deltaToCarInFrontMSPart: parsed.deltaToCarInFrontMSPart,
+                        deltaToCarInFrontMinutesPart: parsed.deltaToCarInFrontMinutesPart,
+                        deltaToRaceLeaderMSPart: parsed.deltaToRaceLeaderMSPart,
+                        deltaToRaceLeaderMinutesPart: parsed.deltaToRaceLeaderMinutesPart,
+                        lapDistance: parsed.lapDistance,
+                        totalDistance: parsed.totalDistance,
+                        safetyCarDelta: parsed.safetyCarDelta,
+                        carPosition: parsed.carPosition,
+                        currentLapNum: parsed.currentLapNum,
+                        pitStatus: parsed.pitStatus,
+                        numPitStops: parsed.numPitStops,
+                        sector: parsed.sector,
+                        currentLapInvalid: parsed.currentLapInvalid,
+                        penalties: parsed.penalties,
+                        totalWarnings: parsed.totalWarnings,
+                        cornerCuttingWarnings: parsed.cornerCuttingWarnings,
+                        numUnservedDriveThroughPens: parsed.numUnservedDriveThroughPens,
+                        numUnservedStopGoPens: parsed.numUnservedStopGoPens,
+                        gridPosition: parsed.gridPosition,
+                        driverStatus: parsed.driverStatus,
+                        resultStatus: parsed.resultStatus,
+                        pitLaneTimerActive: parsed.pitLaneTimerActive,
+                        pitLaneTimeInLaneInMS: parsed.pitLaneTimeInLaneInMS,
+                        pitStopTimerInMS: parsed.pitStopTimerInMS,
+                        pitStopShouldServePen: parsed.pitStopShouldServePen,
+                        speedTrapFastestSpeed: parsed.speedTrapFastestSpeed,
+                        speedTrapFastestLap: parsed.speedTrapFastestLap,
+
+                        bestLapTimeInMS: personalBests.current.lap === Infinity ? 0 : personalBests.current.lap,
+                        sectorData: [s1Disp, s2Disp, s3Disp] // Sostituisce il vecchio sectorStatuses
                     }
                 }));
             }
