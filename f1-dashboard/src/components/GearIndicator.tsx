@@ -8,9 +8,10 @@ interface Props {
   throttle: number;
   brake: number;
   drs: boolean;
+  batteryPercent: number;
 }
 
-export const GearIndicator: React.FC<Props> = ({ gear, speed, rpm, revPercent, throttle, brake, drs }) => {
+export const GearIndicator: React.FC<Props> = ({ gear, speed, rpm, revPercent, throttle, brake, drs, batteryPercent }) => {
   const getRpmColor = (percent: number) => {
     if (percent > 90) return '#a855f7'; // Viola (Shift point)
     if (percent > 75) return '#ef4444'; // Rosso
@@ -21,6 +22,7 @@ export const GearIndicator: React.FC<Props> = ({ gear, speed, rpm, revPercent, t
   // Paracadute matematico per le barre
   const tHeight = Math.min(100, Math.max(0, (throttle || 0) * 100));
   const bHeight = Math.min(100, Math.max(0, (brake || 0) * 100));
+  const safeBattery = Math.min(100, Math.max(0, batteryPercent || 0));
 
   return (
     <section style={centralSection}>
@@ -35,34 +37,48 @@ export const GearIndicator: React.FC<Props> = ({ gear, speed, rpm, revPercent, t
 
       {/* CENTRO: GIRI, MARCIA, VELOCITÀ E DRS */}
       <div style={coreInfo}>
-
         {/* INDICATORE DRS INGLOBATO AL CENTRO */}
         <div style={{
           ...drsBadge,
           backgroundColor: drs ? '#22c55e' : '#222',
           color: drs ? '#000' : '#555',
-          boxShadow: drs ? '0 0 20px rgba(34, 197, 94, 0.4)' : 'none'
+          boxShadow: drs ? '0 0 20px rgba(34, 197, 94, 0.4)' : 'none',
+          marginBottom: '20px'
         }}>
           DRS
         </div>
-
-        <div style={gearContainer}>
-          <span style={gearLabel}>GEAR</span>
-          <span style={gearValue}>{gear === 0 ? 'N' : (gear === -1 ? 'R' : gear)}</span>
-        </div>
-
-        <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-          <div style={speedValue}>{speed} <span style={{ fontSize: '1.5rem', color: '#666' }}>km/h</span></div>
-          <div style={rpmLabel}>{rpm} RPM</div>
-        </div>
-
-
         <div style={rpmBarContainer}>
           <div style={{
             ...rpmBarFill,
             width: `${revPercent}%`,
             backgroundColor: getRpmColor(revPercent)
           }} />
+        </div>
+
+        <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+          <div style={rpmLabel}>{rpm} RPM</div>
+
+        </div>
+
+
+        <div style={gearContainer}>
+          <span style={gearLabel}>GEAR</span>
+          <span style={gearValue}>{gear === 0 ? 'N' : (gear === -1 ? 'R' : gear)}</span>
+          <div style={speedValue}>{speed} <span style={{ fontSize: '1.5rem', color: '#666' }}>km/h</span></div>
+        </div>
+
+        {/* INDICATORE BATTERIA (ERS) */}
+        <div style={batteryModule}>
+          <div style={batteryHeader}>
+            <span style={batteryLabel}>ERS BATTERY</span>
+            <span style={batteryPercentageText}>{Math.round(safeBattery)}%</span>
+          </div>
+          <div style={batteryBarBg}>
+            <div style={{ 
+              ...batteryBarFill, 
+              width: `${safeBattery}%` 
+            }} />
+          </div>
         </div>
 
       </div>
@@ -97,13 +113,13 @@ const coreInfo: React.CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
-  minWidth: '250px'
+  minWidth: '260px'
 };
 
 const gearContainer: React.CSSProperties = { display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '10px' };
 const gearLabel: React.CSSProperties = { fontSize: '1rem', color: '#444', fontWeight: 'bold' };
-const gearValue: React.CSSProperties = { fontSize: '8rem', fontWeight: 900, lineHeight: 1 };
-const speedValue: React.CSSProperties = { fontSize: '4rem', fontWeight: 'bold', margin: '10px 0' };
+const gearValue: React.CSSProperties = { fontSize: '8rem', fontWeight: 900, lineHeight: 1, width: '120px', textAlign: 'center', fontVariantNumeric: 'tabular-nums'};
+const speedValue: React.CSSProperties = { fontSize: '4rem', fontWeight: 'bold', margin: '10px 0' , padding: '20px', fontVariantNumeric: 'tabular-nums' };
 const rpmLabel: React.CSSProperties = { fontSize: '1.2rem', color: '#888' };
 
 const rpmBarContainer: React.CSSProperties = { width: '100%', height: '12px', backgroundColor: '#222', borderRadius: '6px', marginBottom: '20px', overflow: 'hidden' };
@@ -123,4 +139,46 @@ const drsBadge: React.CSSProperties = {
   letterSpacing: '2px',
   transition: 'all 0.1s ease-in-out',
   width: '20%'
+};
+
+const batteryModule: React.CSSProperties = {
+  width: '100%',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '6px'
+};
+
+const batteryHeader: React.CSSProperties = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center'
+};
+
+const batteryLabel: React.CSSProperties = {
+  fontSize: '0.75rem',
+  color: '#666',
+  fontWeight: 'bold',
+  letterSpacing: '1px'
+};
+
+const batteryPercentageText: React.CSSProperties = {
+  fontSize: '1.1rem',
+  color: '#06b6d4',
+  fontWeight: 'bold'
+};
+
+const batteryBarBg: React.CSSProperties = {
+  width: '100%',
+  height: '10px',
+  backgroundColor: '#222',
+  borderRadius: '4px',
+  overflow: 'hidden',
+  border: '1px solid #333'
+};
+
+const batteryBarFill: React.CSSProperties = {
+  height: '100%',
+  backgroundColor: '#06b6d4', // Colore ciano elettrico
+  transition: 'width 0.1s ease-out',
+  boxShadow: '0 0 10px rgba(6, 182, 212, 0.3)'
 };

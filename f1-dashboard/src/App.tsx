@@ -22,6 +22,7 @@ function App() {
           throttle = {data.throttle} 
           brake = {data.brake} 
           drs = {data.drs}
+          batteryPercent = {((data.carStatus.ersStoreEnergy || 0) / 4000000) * 100}
         />
         
         {/* MONITORAGGIO VETTURA (Temperature, Gomme, Freni) */}
