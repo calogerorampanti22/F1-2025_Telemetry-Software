@@ -24,7 +24,59 @@ std::string PacketParser::parsePacketToJson(const std::vector<uint8_t>& data) {
         // TODO
     }
     else if(header.m_packetId == 2) { //ID 2 = Lap Data Packet
-        // TODO
+        // Security check on packed dimension to avoid buffer over-read
+        if(data.size() == sizeof(PacketLapData)) {
+            PacketLapData lapData;
+            std::memcpy(&lapData, data.data(), sizeof(PacketLapData));
+
+            // The packet contains data of all 22 cars
+            // The header indicates which is our car index in these array
+            uint8_t playerIndex = header.m_playerCarIndex;
+            const auto& myCar = lapData.m_lapData[playerIndex];
+
+            // Create JSON object
+            nlohmann::json lapDataJSONObject;
+            lapDataJSONObject["type"] = "lapData";
+
+            lapDataJSONObject["lastLapTimeInMS"] = myCar.m_lastLapTimeInMS;
+            lapDataJSONObject["currentLapTimeInMS"] = myCar.m_currentLapTimeInMS;
+            lapDataJSONObject["sector1TimeMSPart"] = myCar.m_sector1TimeMSPart;
+            lapDataJSONObject["sector1TimeMinutesPart"] = myCar.m_sector1TimeMinutesPart;
+            lapDataJSONObject["sector2TimeMSPart"] = myCar.m_sector2TimeMSPart;
+            lapDataJSONObject["sector2TimeMinutesPart"] = myCar.m_sector2TimeMinutesPart;
+            lapDataJSONObject["deltaToCarInFrontMSPart"] = myCar.m_deltaToCarInFrontMSPart;
+            lapDataJSONObject["deltaToCarInFrontMinutesPart"] = myCar.m_deltaToCarInFrontMinutesPart;
+            lapDataJSONObject["deltaToRaceLeaderMSPart"] = myCar.m_deltaToRaceLeaderMSPart;
+            lapDataJSONObject["deltaToRaceLeaderMinutesPart"] = myCar.m_deltaToRaceLeaderMinutesPart;
+            lapDataJSONObject["lapDistance"] = myCar.m_lapDistance;
+            lapDataJSONObject["totalDistance"] = myCar.m_totalDistance;
+            lapDataJSONObject["safetyCarDelta"] = myCar.m_safetyCarDelta;
+            lapDataJSONObject["carPosition"] = myCar.m_carPosition;
+            lapDataJSONObject["currentLapNum"] = myCar.m_currentLapNum;
+            lapDataJSONObject["pitStatus"] = myCar.m_pitStatus;
+            lapDataJSONObject["numPitStops"] = myCar.m_numPitStops;
+            lapDataJSONObject["sector"] = myCar.m_sector;
+            lapDataJSONObject["currentLapInvalid"] = myCar.m_currentLapInvalid;
+            lapDataJSONObject["penalties"] = myCar.m_penalties;
+            lapDataJSONObject["totalWarnings"] = myCar.m_totalWarnings;
+            lapDataJSONObject["cornerCuttingWarnings"] = myCar.m_cornerCuttingWarnings;
+            lapDataJSONObject["numUnservedDriveThroughPens"] = myCar.m_numUnservedDriveThroughPens;
+            lapDataJSONObject["numUnservedStopGoPens"] = myCar.m_numUnservedStopGoPens;
+            lapDataJSONObject["gridPosition"] = myCar.m_gridPosition;
+            lapDataJSONObject["driverStatus"] = myCar.m_driverStatus;
+            lapDataJSONObject["resultStatus"] = myCar.m_resultStatus;
+            lapDataJSONObject["pitLaneTimerActive"] = myCar.m_pitLaneTimerActive;
+            lapDataJSONObject["pitLaneTimeInLaneInMS"] = myCar.m_pitLaneTimeInLaneInMS;
+            lapDataJSONObject["pitStopTimerInMS"] = myCar.m_pitStopTimerInMS;
+            lapDataJSONObject["pitStopShouldServePen"] = myCar.m_pitStopShouldServePen;
+            lapDataJSONObject["speedTrapFastestSpeed"] = myCar.m_speedTrapFastestSpeed;
+            lapDataJSONObject["speedTrapFastestLap"] = myCar.m_speedTrapFastestLap;
+
+            return lapDataJSONObject.dump();
+        }
+        else {
+            std::cerr << "[Car Telemetry Packet] ERROR: packet dimension not comform" << std::endl;
+        }
     }
     else if(header.m_packetId == 3) { //ID 3 = Event Packet
         // TODO
