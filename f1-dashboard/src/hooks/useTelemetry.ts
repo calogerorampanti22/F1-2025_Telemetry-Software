@@ -39,12 +39,12 @@ export const evaluateSector = (timeMs: number, bestMs: number, gridBestMs: numbe
     if (!timeMs || timeMs === 0) return { status: 'none', timeStr: '', deltaStr: '', deltaColor: '' };
 
     let status: 'none' | 'yellow' | 'green' | 'purple' = 'yellow';
-    
+
     // 1. FUCSIA: Scatta SOLO se il tempo è inferiore o uguale al record della griglia
     // (Aggiungiamo il controllo gridBestMs > 0 per evitare che scatti quando è a zero)
     if (gridBestMs > 0 && timeMs <= gridBestMs) {
         status = 'purple';
-    } 
+    }
     // 2. VERDE: Miglioramento del proprio record personale (Personal Best)
     else if (timeMs <= bestMs || bestMs === Infinity) {
         status = 'green';
@@ -53,7 +53,7 @@ export const evaluateSector = (timeMs: number, bestMs: number, gridBestMs: numbe
     // Il delta parziale visualizzato rimane calcolato rispetto al proprio miglior tempo personale
     const deltaMs = timeMs - bestMs;
     const deltaStr = bestMs === Infinity ? '' : formatDelta(deltaMs);
-    
+
     let deltaColor = '#eab308'; // Giallo
     if (status === 'purple') deltaColor = '#a855f7'; // Fucsia
     if (status === 'green') deltaColor = '#22c55e'; // Verde
@@ -122,6 +122,17 @@ export interface CarStatusData {
     networkPaused: number;
 }
 
+// Lap History Entry Interface
+export interface LapHistoryEntry {
+    lapNum: number;
+    s1Ms: number;
+    s2Ms: number;
+    s3Ms: number;
+    lapTimeMs: number;
+    compound: number;
+    tyreAge: number;
+}
+
 // Lap Data Interface
 export interface LapData {
     lastLapTimeInMS: number;
@@ -160,6 +171,7 @@ export interface LapData {
 
     bestLapTimeInMS: number;
     sectorData: [SectorDisplay, SectorDisplay, SectorDisplay];
+    lapHistory: LapHistoryEntry[];
 }
 
 export function useTelemetry() {
@@ -250,7 +262,8 @@ export function useTelemetry() {
                 { status: 'none', timeStr: '', deltaStr: '', deltaColor: '' },
                 { status: 'none', timeStr: '', deltaStr: '', deltaColor: '' },
                 { status: 'none', timeStr: '', deltaStr: '', deltaColor: '' }
-            ]
+            ],
+            lapHistory: []
         }
     });
 
@@ -265,6 +278,8 @@ export function useTelemetry() {
         s3: Infinity
     });
 
+    const lapHistory = useRef<LapHistoryEntry[]>([]);
+
     const trackState = useRef({
         lapNum: -1,
         liveS1: null as SectorDisplay | null,
@@ -275,12 +290,13 @@ export function useTelemetry() {
         holdUntil: 0,
         lastS1Time: Infinity,
         lastS2Time: Infinity,
-        lastS3Time: Infinity
+        lastS3Time: Infinity,
+        visualTyreCompound: 16,
+        tyresAgeLaps: 0
     });
-    
+
     useEffect(() => {
-        const serverIp = import.meta.env.VITE_SERVER_IP || window.location.hostname;
-        wsRef.current = new WebSocket(`ws://${serverIp}:8080/telemetry`);
+        wsRef.current = new WebSocket(`ws://localhost:8080/telemetry`);
 
         wsRef.current.onopen = () => setIsConnected(true);
         wsRef.current.onclose = () => setIsConnected(false);
@@ -310,7 +326,9 @@ export function useTelemetry() {
                     surfaceType: parsed.surfaceType
                 }));
             }
-            else if(parsed.type === 'carStatus') {
+            else if (parsed.type === 'carStatus') {
+                trackState.current.visualTyreCompound = parsed.visualTyreCompound;
+                trackState.current.tyresAgeLaps = parsed.tyresAgeLaps;
                 setData(prev => ({
                     ...prev,
                     carStatus: {
@@ -319,7 +337,7 @@ export function useTelemetry() {
                         fuelMix: parsed.fuelMix,
                         frontBrakeBias: parsed.frontBrakeBias,
                         pitLimiterStatus: parsed.pitLimiterStatus,
-                        fuelInTank:parsed.fuelInTank,
+                        fuelInTank: parsed.fuelInTank,
                         fuelCapacity: parsed.fuelCapacity,
                         fuelRemainingLaps: parsed.fuelRemainingLaps,
                         maxRPM: parsed.maxRPM,
@@ -328,7 +346,7 @@ export function useTelemetry() {
                         drsAllowed: parsed.drsAllowed,
                         drsActivationDistance: parsed.drsActivationDistance,
                         actualTyreCompound: parsed.actualTyreCompound,
-                        visualTyreCompound:parsed.visualTyreCompound,
+                        visualTyreCompound: parsed.visualTyreCompound,
                         tyresAgeLaps: parsed.tyresAgeLaps,
                         vehicleFiaFlags: parsed.vehicleFiaFlags,
                         enginePowerICE: parsed.enginePowerICE,
@@ -342,7 +360,7 @@ export function useTelemetry() {
                     }
                 }));
             }
-            else if(parsed.type === 'lapData') {
+            else if (parsed.type === 'lapData') {
                 const s1Time = (parsed.sector1TimeMinutesPart * 60000) + parsed.sector1TimeMSPart;
                 const s2Time = (parsed.sector2TimeMinutesPart * 60000) + parsed.sector2TimeMSPart;
 
@@ -354,16 +372,26 @@ export function useTelemetry() {
                 // 1. FREEZE FRAME DI FINE GIRO
                 if (trackState.current.lapNum !== -1 && parsed.currentLapNum > trackState.current.lapNum) {
                     const s3Time = parsed.lastLapTimeInMS - trackState.current.lastS1Time - trackState.current.lastS2Time;
-                    
+
                     // Passiamo gridBestS3 come quarto parametro
                     trackState.current.frozenS3 = evaluateSector(s3Time, personalBests.current.s3, gridBestS3);
                     trackState.current.frozenS1 = trackState.current.liveS1;
                     trackState.current.frozenS2 = trackState.current.liveS2;
                     trackState.current.holdUntil = Date.now() + 5000;
-                    
+
                     if (s3Time > 0 && s3Time < personalBests.current.s3) personalBests.current.s3 = s3Time;
                     trackState.current.lastS3Time = s3Time;
-                    
+
+                    lapHistory.current.push({
+                        lapNum: trackState.current.lapNum,
+                        s1Ms: trackState.current.lastS1Time,
+                        s2Ms: trackState.current.lastS2Time,
+                        s3Ms: s3Time,
+                        lapTimeMs: parsed.lastLapTimeInMS,
+                        compound: trackState.current.visualTyreCompound,
+                        tyreAge: trackState.current.tyresAgeLaps
+                    });
+
                     trackState.current.liveS1 = null;
                     trackState.current.liveS2 = null;
                 }
@@ -410,12 +438,12 @@ export function useTelemetry() {
                     // Si colora (e mostra i testi) SOLO se la variabile live è stata popolata a fine settore.
                     s1Disp = trackState.current.liveS1 || emptySector;
                     s2Disp = trackState.current.liveS2 || emptySector;
-                    
+
                     // S3 live è sempre spento, perché il suo calcolo scatta solo 
                     // al taglio del traguardo attivando il "Freeze" qui sopra.
-                    s3Disp = emptySector; 
+                    s3Disp = emptySector;
                 }
-                
+
                 // 5. SALVATAGGIO STATO PER UI
                 setData(prev => ({
                     ...prev,
@@ -455,7 +483,8 @@ export function useTelemetry() {
                         speedTrapFastestLap: parsed.speedTrapFastestLap,
 
                         bestLapTimeInMS: personalBests.current.lap === Infinity ? 0 : personalBests.current.lap,
-                        sectorData: [s1Disp, s2Disp, s3Disp] // Sostituisce il vecchio sectorStatuses
+                        sectorData: [s1Disp, s2Disp, s3Disp], // Sostituisce il vecchio sectorStatuses
+                        lapHistory: [...lapHistory.current]
                     }
                 }));
             }
@@ -463,7 +492,7 @@ export function useTelemetry() {
 
         // Cleanup function
         return () => {
-            if(wsRef.current) {
+            if (wsRef.current) {
                 wsRef.current.close();
             }
         };

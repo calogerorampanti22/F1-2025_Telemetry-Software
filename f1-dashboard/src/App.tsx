@@ -9,41 +9,44 @@ function App() {
   const { data, isConnected } = useTelemetry();
 
   return (
-    <div style = {containerStyle}>
-      <StatusHeader connected = {isConnected} />
-      
-      <main style = {dashboardLayout}>
-        
+    <div style={containerStyle}>
+      <StatusHeader connected={isConnected} />
+
+      <main style={dashboardLayout}>
+
+        {/* MONITORAGGIO VETTURA (Temperature, Gomme, Freni) */}
+        <CarMonitor
+          engineTemperature={data.engineTemperature}
+          brakesTemperature={data.brakesTemperature}
+          tyresSurfaceTemps={data.tyresSurfaceTemperature}
+          tyresInnerTemps={data.tyresInnerTemperature}
+          tyresPressure={data.tyresPressure}
+          tyresCompound={data.carStatus.visualTyreCompound}
+          tyresAgeLaps={data.carStatus.tyresAgeLaps}
+        />
+
         {/* HUD PRINCIPALE (Motore, Marce, Pedali, DRS) */}
-        <GearIndicator 
-          gear = {data.gear} 
-          speed = {data.speed}
-          rpm = {data.engineRPM} 
-          revPercent = {data.revLightsPercent} 
-          throttle = {data.throttle} 
-          brake = {data.brake} 
-          drs = {data.drs}
-          batteryPercent = {((data.carStatus.ersStoreEnergy || 0) / 4000000) * 100}
+        <GearIndicator
+          gear={data.gear}
+          speed={data.speed}
+          rpm={data.engineRPM}
+          revPercent={data.revLightsPercent}
+          throttle={data.throttle}
+          brake={data.brake}
+          drs={data.drs}
+          batteryPercent={((data.carStatus.ersStoreEnergy || 0) / 4000000) * 100}
         />
 
         {/* SEZIONE LAP TIMING (Tempi sul giro e settori dinamici) */}
-        <LapTimeMonitor 
-          currentLapTime = {formatLapTime(data.lapData.currentLapTimeInMS)}
-          lastLapTime = {formatLapTime(data.lapData.lastLapTimeInMS)}
-          bestLapTime = {formatLapTime(data.lapData.bestLapTimeInMS)}
-          sectors = {data.lapData.sectorData}
-          carPosition = {data.lapData.carPosition}
-        />
-        
-        {/* MONITORAGGIO VETTURA (Temperature, Gomme, Freni) */}
-        <CarMonitor
-          engineTemperature = {data.engineTemperature}
-          brakesTemperature = {data.brakesTemperature}
-          tyresSurfaceTemps = {data.tyresSurfaceTemperature} 
-          tyresInnerTemps = {data.tyresInnerTemperature}
-          tyresPressure = {data.tyresPressure}
-          tyresCompound = {data.carStatus.visualTyreCompound}
-          tyresAgeLaps = {data.carStatus.tyresAgeLaps}
+        <LapTimeMonitor
+          currentLapTime={formatLapTime(data.lapData.currentLapTimeInMS)}
+          lastLapTime={formatLapTime(data.lapData.lastLapTimeInMS)}
+          bestLapTime={formatLapTime(data.lapData.bestLapTimeInMS)}
+          sectors={data.lapData.sectorData}
+          carPosition={data.lapData.carPosition}
+          lapHistory={data.lapData.lapHistory}
+          compoundId={data.carStatus.visualTyreCompound}
+          tyreAge={data.carStatus.tyresAgeLaps}
         />
 
       </main>
