@@ -22,7 +22,9 @@ FetchContent_Declare(json
 )
 FetchContent_MakeAvailable(json)
 
-set(ASIO_INCLUDE_DIR "C:/msys64/ucrt64/include" CACHE PATH "ASIO Path Force" FORCE)
+if(WIN32)
+    set(ASIO_INCLUDE_DIR "C:/msys64/ucrt64/include" CACHE PATH "ASIO Path Force" FORCE)
+endif()
 
 # 2. Web Framework and WebSocket (Crow)
 FetchContent_Declare(Crow
