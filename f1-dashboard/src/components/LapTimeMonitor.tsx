@@ -23,6 +23,7 @@ interface Props {
   currentLapTime: string;
   lastLapTime: string;
   bestLapTime: string;
+  deltaStr: string;
   sectors: [SectorDisplay, SectorDisplay, SectorDisplay];
   carPosition: number;
   lapHistory?: LapHistoryEntry[];
@@ -30,7 +31,7 @@ interface Props {
   tyreAge: number;
 }
 
-export const LapTimeMonitor: React.FC<Props> = ({ currentLapTime, lastLapTime, bestLapTime, sectors, carPosition, lapHistory = [] }) => {
+export const LapTimeMonitor: React.FC<Props> = ({ currentLapTime, lastLapTime, bestLapTime, deltaStr, sectors, carPosition, lapHistory = [] }) => {
 
   const getSectorColor = (status: SectorDisplay['status']) => {
     switch (status) {
@@ -64,6 +65,12 @@ export const LapTimeMonitor: React.FC<Props> = ({ currentLapTime, lastLapTime, b
       <div style={currentTimeContainer}>
         <span style={currentTimeLabel}>CURRENT</span>
         <span style={currentTimeValue}>{currentLapTime || "0:00.000"}</span>
+        {deltaStr && (
+          <span style={{
+            ...deltaLabel,
+            color: deltaStr.startsWith('-') ? '#22c55e' : (deltaStr.startsWith('+') ? '#ef4444' : '#555')
+          }}>{deltaStr}</span>
+        )}
       </div>
 
       <div style={sectorsRow}>
@@ -151,6 +158,7 @@ const containerStyle: React.CSSProperties = { backgroundColor: '#111', padding: 
 const sectionTitle: React.CSSProperties = { fontSize: '0.8rem', color: '#666', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '8px' };
 const currentTimeContainer: React.CSSProperties = { display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '20px', backgroundColor: '#1a1a1a', padding: '10px', borderRadius: '8px', border: '1px solid #252525' };
 const currentTimeLabel: React.CSSProperties = { fontSize: '0.65rem', color: '#555', fontWeight: 'bold', letterSpacing: '1px' };
+const deltaLabel: React.CSSProperties = { fontSize: '0.8rem', fontWeight: 'bold', letterSpacing: '1px', marginTop: '4px' };
 const currentTimeValue: React.CSSProperties = { fontSize: '2.4rem', fontWeight: 'bold', color: '#fff', fontVariantNumeric: 'tabular-nums', letterSpacing: '1px' };
 const sectorsRow: React.CSSProperties = { display: 'flex', justifyContent: 'space-between', gap: '15px', marginBottom: '25px' };
 const sectorBlock: React.CSSProperties = { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' };

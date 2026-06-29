@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTelemetry, formatLapTime } from './hooks/useTelemetry';
+import { useTelemetry, formatLapTime, formatLiveDelta } from './hooks/useTelemetry';
 import { StatusHeader } from './components/StatusHeader';
 import { GearIndicator } from './components/GearIndicator';
 import { CarMonitor } from './components/CarMonitor';
@@ -42,6 +42,7 @@ function App() {
           currentLapTime={formatLapTime(data.lapData.currentLapTimeInMS)}
           lastLapTime={formatLapTime(data.lapData.lastLapTimeInMS)}
           bestLapTime={formatLapTime(data.lapData.bestLapTimeInMS)}
+          deltaStr={formatLiveDelta(data.lapData.liveDelta)}
           sectors={data.lapData.sectorData}
           carPosition={data.lapData.carPosition}
           lapHistory={data.lapData.lapHistory}

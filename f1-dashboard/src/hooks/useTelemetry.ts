@@ -27,6 +27,15 @@ export const formatDelta = (ms: number): string => {
     return `${sign}${seconds}.${milliseconds.toString().padStart(3, '0')}`;
 };
 
+export const formatLiveDelta = (ms: number): string => {
+    if (ms === Infinity || isNaN(ms)) return "";
+    const sign = ms >= 0 ? '+' : '-';
+    const absMs = Math.abs(ms);
+    const seconds = Math.floor(absMs / 1000);
+    const milliseconds = absMs % 1000;
+    return `${sign}${seconds}.${milliseconds.toString().padStart(3, '0')}`;
+};
+
 export interface SectorDisplay {
     status: 'none' | 'yellow' | 'green' | 'purple';
     timeStr: string;
@@ -169,6 +178,8 @@ export interface LapData {
     speedTrapFastestSpeed: number;
     speedTrapFastestLap: number;
 
+    liveDelta: number;
+
     bestLapTimeInMS: number;
     sectorData: [SectorDisplay, SectorDisplay, SectorDisplay];
     lapHistory: LapHistoryEntry[];
@@ -256,6 +267,8 @@ export function useTelemetry() {
             pitStopShouldServePen: 0,
             speedTrapFastestSpeed: 0,
             speedTrapFastestLap: 0,
+
+            liveDelta: 0,
 
             bestLapTimeInMS: 0,
             sectorData: [
@@ -481,6 +494,8 @@ export function useTelemetry() {
                         pitStopShouldServePen: parsed.pitStopShouldServePen,
                         speedTrapFastestSpeed: parsed.speedTrapFastestSpeed,
                         speedTrapFastestLap: parsed.speedTrapFastestLap,
+
+                        liveDelta: parsed.liveDelta,
 
                         bestLapTimeInMS: personalBests.current.lap === Infinity ? 0 : personalBests.current.lap,
                         sectorData: [s1Disp, s2Disp, s3Disp], // Sostituisce il vecchio sectorStatuses
