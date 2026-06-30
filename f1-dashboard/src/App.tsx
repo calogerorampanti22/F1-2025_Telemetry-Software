@@ -4,6 +4,7 @@ import { StatusHeader } from './components/StatusHeader';
 import { GearIndicator } from './components/GearIndicator';
 import { CarMonitor } from './components/CarMonitor';
 import { LapTimeMonitor } from './components/LapTimeMonitor';
+import { TrackProgressMap } from './components/TrackProgressMap';
 
 function App() {
   const { data, isConnected } = useTelemetry();
@@ -48,6 +49,12 @@ function App() {
           lapHistory={data.lapData.lapHistory}
           compoundId={data.carStatus.visualTyreCompound}
           tyreAge={data.carStatus.tyresAgeLaps}
+        />
+
+        <TrackProgressMap
+          lapDistance = {data.lapData.lapDistance}
+          trackLength = {data.sessionData.trackLength}
+          trackId = {data.sessionData.trackId}
         />
 
       </main>

@@ -100,6 +100,9 @@ export interface TelemetryData {
 
     // Lap Data object
     lapData: LapData;
+
+    // Session Data object
+    sessionData: SessionData;
 }
 
 // Car Status Data Interface
@@ -183,6 +186,12 @@ export interface LapData {
     bestLapTimeInMS: number;
     sectorData: [SectorDisplay, SectorDisplay, SectorDisplay];
     lapHistory: LapHistoryEntry[];
+}
+
+// Session Data Interface
+export interface SessionData {
+    trackId: number;
+    trackLength: number;
 }
 
 export function useTelemetry() {
@@ -277,6 +286,10 @@ export function useTelemetry() {
                 { status: 'none', timeStr: '', deltaStr: '', deltaColor: '' }
             ],
             lapHistory: []
+        },
+        sessionData: {
+            trackId: -1,
+            trackLength: 0
         }
     });
 
@@ -500,6 +513,15 @@ export function useTelemetry() {
                         bestLapTimeInMS: personalBests.current.lap === Infinity ? 0 : personalBests.current.lap,
                         sectorData: [s1Disp, s2Disp, s3Disp], // Sostituisce il vecchio sectorStatuses
                         lapHistory: [...lapHistory.current]
+                    }
+                }));
+            }
+            else if(parsed.type === "session") {
+                setData(prev => ({
+                    ...prev,
+                    sessionData: {
+                        trackId: parsed.trackId,
+                        trackLength: parsed.trackLength
                     }
                 }));
             }

@@ -21,7 +21,21 @@ std::string PacketParser::parsePacketToJson(const std::vector<uint8_t>& data) {
         // TODO
     }
     else if(header.m_packetId == 1) { //ID 1 = Session Packet
-        // TODO
+        if(data.size() == sizeof(PacketSessionData)) {
+            PacketSessionData sessionData;
+            std::memcpy(&sessionData, data.data(), sizeof(PacketSessionData));
+
+            nlohmann::json sessionDataJSONObject;
+
+            sessionDataJSONObject["type"] = "session";
+            sessionDataJSONObject["trackId"] = sessionData.m_trackId;
+            sessionDataJSONObject["trackLength"] = sessionData.m_trackLength;
+
+            return sessionDataJSONObject.dump();
+        }
+        else {
+            std::cerr << "[Session Packet] ERROR: packet dimension not comform" << std::endl;
+        }
     }
     else if(header.m_packetId == 2) { //ID 2 = Lap Data Packet
         // Security check on packed dimension to avoid buffer over-read
