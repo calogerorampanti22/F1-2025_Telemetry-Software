@@ -1,10 +1,11 @@
 import React from 'react';
-import { useTelemetry, formatLapTime, formatLiveDelta } from './hooks/useTelemetry';
 import { StatusHeader } from './components/StatusHeader';
 import { GearIndicator } from './components/GearIndicator';
 import { CarMonitor } from './components/CarMonitor';
 import { LapTimeMonitor } from './components/LapTimeMonitor';
 import { TrackProgressMap } from './components/TrackProgressMap';
+import { formatLapTime, formatLiveDelta } from './telemetry/formatters';
+import { useTelemetry } from './hooks/useTelemetry';
 
 function App() {
   const { data, isConnected } = useTelemetry();

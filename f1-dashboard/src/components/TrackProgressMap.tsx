@@ -14,7 +14,6 @@ export const TrackProgressMap: React.FC<Props> = ({ lapDistance, trackLength, tr
 
   // Peschiamo i dati della pista attuale
   const trackInfo = TRACK_PATHS[trackId];
-  console.log(lapDistance);
 
   useEffect(() => {
     // Barriera di sicurezza rinforzata

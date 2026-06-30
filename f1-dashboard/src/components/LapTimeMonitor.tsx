@@ -1,6 +1,7 @@
 import React from 'react';
 import { Timer } from 'lucide-react';
-import { type LapHistoryEntry, formatLapTime, formatSectorTime } from '../hooks/useTelemetry';
+import { type LapHistoryEntry } from '../hooks/useTelemetry';
+import { formatLapTime, formatSectorTime } from '../telemetry/formatters';
 
 const getTyreIcon = (compoundId: number): string => {
   switch (compoundId) {
