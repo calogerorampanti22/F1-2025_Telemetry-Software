@@ -14,8 +14,8 @@ interface Props {
 
 export const CarMonitor: React.FC<Props> = ({ engineTemperature, brakesTemperature, tyresSurfaceTemps, tyresInnerTemps, tyresPressure, tyresCompound, tyresAgeLaps }) => {
   const getTempColor = (temp: number) => {
-    if (temp > 130) return '#ef4444';
-    if (temp < 90) return '#3b82f6';
+    if (temp > 120) return '#ef4444';
+    if (temp < 80) return '#3b82f6';
     return '#22c55e';
   };
 
