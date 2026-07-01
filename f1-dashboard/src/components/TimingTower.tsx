@@ -17,19 +17,19 @@ export const TimingTower: React.FC<TimingTowerProps> = ({ allCars = [], playerCa
 
     const formatGap = (rawMs: number, rawMins: number) => {
         if (rawMs === undefined || rawMins === undefined) return '';
-        
+
         const ms = Number(rawMs) || 0;
         const mins = Number(rawMins) || 0;
-        
+
         // In F1 telemetry, 65535 for uint16 and 255 for uint8 often mean "invalid" or "not set"
         if (ms === 65535 || mins === 255) return '';
-        
+
         // Se i minuti sono esagerati (es. > 10), probabilmente c'è un disallineamento della struct (es. F1 23 vs F1 24)
         const safeMins = mins > 10 ? 0 : mins;
-        
+
         const totalMs = (safeMins * 60000) + ms;
         if (totalMs === 0) return '';
-        
+
         if (totalMs >= 60000) {
             const m = Math.floor(totalMs / 60000);
             const s = (totalMs % 60000) / 1000;
@@ -55,12 +55,12 @@ export const TimingTower: React.FC<TimingTowerProps> = ({ allCars = [], playerCa
                     const teamId = participant ? participant.teamId : -1;
                     const teamColor = TEAM_COLORS[teamId] || '#888888';
 
-                    let gapStr = car.carPosition === 1 ? 'LEADER' : formatGap(car.deltaToRaceLeaderMSPart, car.deltaToRaceLeaderMinutesPart);
-                    let gapToFrontStr = car.carPosition === 1 ? '' : formatGap(car.deltaToCarInFrontMSPart, car.deltaToCarInFrontMinutesPart);
+                    let gapStr = car.carPosition === 1 ? 'Leader' : formatGap(car.deltaToRaceLeaderMSPart, car.deltaToRaceLeaderMinutesPart);
+                    let gapToFrontStr = car.carPosition === 1 ? 'Interval' : formatGap(car.deltaToCarInFrontMSPart, car.deltaToCarInFrontMinutesPart);
 
                     // If gapStr is missing (e.g., game doesn't provide it), we can fallback, but we now have a dedicated interval column
                     if (gapStr === '' && car.carPosition > 1 && gapToFrontStr !== '') {
-                        gapStr = gapToFrontStr + ' (INT)';
+                        gapStr = gapToFrontStr;
                     }
 
                     return (

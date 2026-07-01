@@ -1,5 +1,5 @@
 .timing-tower-container {
-    width: 400px;
+    width: 600px;
     background: rgba(15, 15, 20, 0.7);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
@@ -113,17 +113,18 @@
 }
 
 .gap {
-    width: 65px;
+    width: 100px;
     text-align: right;
     font-variant-numeric: tabular-nums;
     color: #dddddd;
 }
 
 .gap-front {
-    width: 65px;
+    width: 150px;
     text-align: right;
     font-variant-numeric: tabular-nums;
-    color: #aaaaaa; /* slightly dimmer than gap to leader */
+    color: #aaaaaa;
+    /* slightly dimmer than gap to leader */
     margin-left: 8px;
 }
 
