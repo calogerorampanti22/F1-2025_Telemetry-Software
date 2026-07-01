@@ -4,6 +4,7 @@ import { GearIndicator } from './components/GearIndicator';
 import { CarMonitor } from './components/CarMonitor';
 import { LapTimeMonitor } from './components/LapTimeMonitor';
 import { TrackProgressMap } from './components/TrackProgressMap';
+import { TimingTower } from './components/TimingTower';
 import { formatLapTime, formatLiveDelta } from './telemetry/formatters';
 import { useTelemetry } from './hooks/useTelemetry';
 
@@ -15,6 +16,13 @@ function App() {
       <StatusHeader connected={isConnected} />
 
       <main style={dashboardLayout}>
+
+        {/* TIMING TOWER */}
+        <TimingTower
+          allCars={data.allCarsLapData}
+          playerCarIndex={data.lapData?.carIndex}
+          participants={data.participants}
+        />
 
         {/* MONITORAGGIO VETTURA (Temperature, Gomme, Freni) */}
         <CarMonitor
@@ -53,9 +61,10 @@ function App() {
         />
 
         <TrackProgressMap
-          lapDistance = {data.lapData.lapDistance}
-          trackLength = {data.sessionData.trackLength}
-          trackId = {data.sessionData.trackId}
+          lapDistance={data.lapData.lapDistance}
+          trackLength={data.sessionData.trackLength}
+          trackId={data.sessionData.trackId}
+          participant={data.participants[data.lapData?.carIndex]}
         />
 
       </main>

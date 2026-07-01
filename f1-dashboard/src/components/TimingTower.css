@@ -1,0 +1,136 @@
+.timing-tower-container {
+    width: 400px;
+    background: rgba(15, 15, 20, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+    color: #ffffff;
+    font-family: "JetBrains Mono", "Inter", monospace, sans-serif;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.timing-tower-container:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+}
+
+.timing-tower-header {
+    background: linear-gradient(135deg, rgba(255, 0, 0, 0.8), rgba(200, 0, 0, 0.9));
+    padding: 12px 16px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.timing-tower-header h2 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.timing-tower-list {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Scrollbar styling */
+.timing-tower-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.timing-tower-list::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.timing-tower-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+}
+
+.timing-tower-row {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 0.9rem;
+    transition: background-color 0.2s ease;
+}
+
+.timing-tower-row:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.timing-tower-row.player-row {
+    background: linear-gradient(90deg, rgba(0, 150, 255, 0.2), rgba(0, 150, 255, 0.05));
+    border-left: 4px solid #0096ff;
+}
+
+.position {
+    width: 30px;
+    font-weight: 700;
+    text-align: right;
+    margin-right: 12px;
+    color: #aaaaaa;
+}
+
+.player-row .position {
+    color: #ffffff;
+}
+
+.team-color-bar {
+    width: 4px;
+    height: 16px;
+    background-color: #ffffff;
+    border-radius: 2px;
+    margin-right: 12px;
+    opacity: 0.8;
+}
+
+/* Let's set a default color, in F1 we would have team colors here */
+.team-color-bar {
+    background-color: #888888;
+}
+
+.driver-name {
+    flex-grow: 1;
+    font-weight: 600;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.player-row .driver-name {
+    color: #0096ff;
+    text-shadow: 0 0 8px rgba(0, 150, 255, 0.4);
+}
+
+.gap {
+    width: 65px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    color: #dddddd;
+}
+
+.gap-front {
+    width: 65px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    color: #aaaaaa; /* slightly dimmer than gap to leader */
+    margin-left: 8px;
+}
+
+.pits {
+    width: 45px;
+    text-align: right;
+    font-size: 0.75rem;
+    color: #ffaa00;
+    font-weight: 700;
+}

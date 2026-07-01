@@ -39,7 +39,10 @@ add_executable(f1_telemetry
     src/main.cpp
     src/network/UDPListener.cpp
     src/parser/PacketParser.cpp
-    src/Car.hpp
+    src/models/Lap.hpp
+    src/models/Session.hpp
+    src/models/CarTelemetry.hpp
+    src/models/CarStatus.hpp
 )
 
 if(MINGW)

@@ -36,7 +36,9 @@ export function useTelemetry() {
 
         carStatus: {} as CarStatusData,
         lapData: {} as LapData,
-        sessionData: {} as SessionData
+        allCarsLapData: [],
+        sessionData: {} as SessionData,
+        participants: []
     }));
 
     const [isConnected, setIsConnected] = useState(false);
@@ -52,6 +54,18 @@ export function useTelemetry() {
         s2: Infinity,
         s3: Infinity
     });
+
+    const sessionBests = useRef({
+        s1: Infinity,
+        s2: Infinity,
+        s3: Infinity
+    });
+
+    const gridCarsState = useRef(new Array(22).fill(null).map(() => ({
+        lapNum: -1,
+        lastS1: 0,
+        lastS2: 0
+    })));
 
     const lapHistory = useRef<LapHistoryEntry[]>([]);
 
@@ -120,11 +134,15 @@ export function useTelemetry() {
                     break;
 
                 case 'lapData':
-                    handleLapData(parsed, trackState, personalBests, lapHistory, pendingRef);
+                    handleLapData(parsed, trackState, personalBests, sessionBests, gridCarsState, lapHistory, pendingRef);
                     break;
 
                 case 'session':
                     handleSession(parsed, pendingRef);
+                    break;
+
+                case 'participants':
+                    pendingRef.current.participants = parsed.drivers;
                     break;
             }
 

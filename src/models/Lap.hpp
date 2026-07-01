@@ -6,11 +6,48 @@
 
 #include "parser/F1Structs.h"
 
-class Car {
-    public:
-        Car() = default;
+class Lap {
+    private:
+        uint8_t m_carIndex;
+        uint32_t m_lastLapTimeInMS;
+        uint32_t m_currentLapTimeInMS;
+        uint16_t m_sector1TimeMSPart;
+        uint8_t m_sector1TimeMinutesPart;
+        uint16_t m_sector2TimeMSPart;
+        uint8_t m_sector2TimeMinutesPart;
+        uint16_t m_deltaToCarInFrontMSPart;
+        uint8_t m_deltaToCarInFrontMinutesPart;
+        uint16_t m_deltaToRaceLeaderMSPart;
+        uint8_t m_deltaToRaceLeaderMinutesPart;
+        float m_lapDistance;
+        float m_totalDistance;
+        float m_safetyCarDelta;
+        uint8_t m_carPosition;
+        uint8_t m_currentLapNum;
+        uint8_t m_pitStatus;
+        uint8_t m_numPitStops;
+        uint8_t m_sector;
+        uint8_t m_currentLapInvalid;
+        uint8_t m_penalties;
+        uint8_t m_totalWarnings;
+        uint8_t m_cornerCuttingWarnings;
+        uint8_t m_numUnservedDriveThroughPens;
+        uint8_t m_numUnservedStopGoPens;
+        uint8_t m_gridPosition;
+        uint8_t m_driverStatus;
+        uint8_t m_resultStatus;
+        uint8_t m_pitLaneTimerActive;
+        uint16_t m_pitLaneTimeInLaneInMS;
+        uint16_t m_pitStopTimerInMS;
+        uint8_t m_pitStopShouldServePen;
+        float m_speedTrapFastestSpeed;
+        uint8_t m_speedTrapFastestLap;
 
-        Car(const LapData& lapData) :
+    public:
+        Lap() = default;
+
+        Lap(const LapData& lapData, uint8_t carIndex) :
+            m_carIndex(carIndex),
             m_lastLapTimeInMS(lapData.m_lastLapTimeInMS),
             m_currentLapTimeInMS(lapData.m_currentLapTimeInMS),
             m_sector1TimeMSPart(lapData.m_sector1TimeMSPart),
@@ -49,6 +86,7 @@ class Car {
         std::string toJson() {
             nlohmann::json jsonObject;
             jsonObject["type"] = "lapData";
+            jsonObject["carIndex"] = m_carIndex;
             jsonObject["lastLapTimeInMS"] = m_lastLapTimeInMS;
             jsonObject["currentLapTimeInMS"] = m_currentLapTimeInMS;
             jsonObject["sector1TimeMSPart"] = m_sector1TimeMSPart;
@@ -85,39 +123,4 @@ class Car {
 
             return jsonObject.dump();
         }
-
-    private:
-        uint32_t m_lastLapTimeInMS;
-        uint32_t m_currentLapTimeInMS;
-        uint16_t m_sector1TimeMSPart;
-        uint8_t m_sector1TimeMinutesPart;
-        uint16_t m_sector2TimeMSPart;
-        uint8_t m_sector2TimeMinutesPart;
-        uint16_t m_deltaToCarInFrontMSPart;
-        uint8_t m_deltaToCarInFrontMinutesPart;
-        uint16_t m_deltaToRaceLeaderMSPart;
-        uint8_t m_deltaToRaceLeaderMinutesPart;
-        float m_lapDistance;
-        float m_totalDistance;
-        float m_safetyCarDelta;
-        uint8_t m_carPosition;
-        uint8_t m_currentLapNum;
-        uint8_t m_pitStatus;
-        uint8_t m_numPitStops;
-        uint8_t m_sector;
-        uint8_t m_currentLapInvalid;
-        uint8_t m_penalties;
-        uint8_t m_totalWarnings;
-        uint8_t m_cornerCuttingWarnings;
-        uint8_t m_numUnservedDriveThroughPens;
-        uint8_t m_numUnservedStopGoPens;
-        uint8_t m_gridPosition;
-        uint8_t m_driverStatus;
-        uint8_t m_resultStatus;
-        uint8_t m_pitLaneTimerActive;
-        uint16_t m_pitLaneTimeInLaneInMS;
-        uint16_t m_pitStopTimerInMS;
-        uint8_t m_pitStopShouldServePen;
-        float m_speedTrapFastestSpeed;
-        uint8_t m_speedTrapFastestLap;
 };

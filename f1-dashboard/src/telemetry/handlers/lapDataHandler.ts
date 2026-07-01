@@ -4,30 +4,95 @@ export function handleLapData(
     parsed: any,
     trackState: any,
     personalBests: any,
+    sessionBests: any,
+    gridCarsState: any,
     lapHistory: any,
     pendingRef: any
 ) {
+    const cars = parsed.cars;
+    const playerCarIndex = parsed.playerCarIndex;
+
+    let playerLap: any = null;
+
+    if (cars && cars.length > 0) {
+        playerLap = cars[playerCarIndex];
+        pendingRef.current.allCarsLapData = cars;
+
+        // Safely initialize sessionBests if corrupted by Fast Refresh
+        if (!sessionBests.current || typeof sessionBests.current.s1 !== 'number') {
+            sessionBests.current = { s1: Infinity, s2: Infinity, s3: Infinity };
+        }
+
+        // Safely initialize gridCarsState if corrupted by Fast Refresh
+        if (!Array.isArray(gridCarsState.current) || gridCarsState.current.length < cars.length) {
+            gridCarsState.current = new Array(22).fill(null).map(() => ({ lapNum: -1, lastS1: 0, lastS2: 0 }));
+        }
+
+        // Calculate session bests from all cars
+        for (let i = 0; i < cars.length; i++) {
+            const car = cars[i];
+            const state = gridCarsState.current[i];
+            if (!state) continue;
+
+            const s1 = (car.sector1TimeMinutesPart || 0) * 60000 + (car.sector1TimeMSPart || 0);
+            const s2 = (car.sector2TimeMinutesPart || 0) * 60000 + (car.sector2TimeMSPart || 0);
+
+            // Live S1 update for grid
+            if (car.sector === 1 && s1 > 0) {
+                state.lastS1 = s1;
+                if (s1 < sessionBests.current.s1) sessionBests.current.s1 = s1;
+            }
+            
+            // Live S2 update for grid
+            if (car.sector === 2 && s2 > 0) {
+                state.lastS2 = s2;
+                if (s2 < sessionBests.current.s2) sessionBests.current.s2 = s2;
+            }
+
+            // Lap finished -> calculate S3
+            if (state.lapNum !== -1 && car.currentLapNum > state.lapNum) {
+                if (car.lastLapTimeInMS > 0 && state.lastS1 > 0 && state.lastS2 > 0) {
+                    const s3 = car.lastLapTimeInMS - state.lastS1 - state.lastS2;
+                    if (s3 > 0 && s3 < sessionBests.current.s3) {
+                        sessionBests.current.s3 = s3;
+                    }
+                }
+                // Reset sectors for new lap
+                state.lastS1 = 0;
+                state.lastS2 = 0;
+            }
+            
+            state.lapNum = car.currentLapNum;
+        }
+    } else {
+        // Fallback for old parser executable
+        playerLap = parsed;
+        pendingRef.current.allCarsLapData = [parsed];
+    }
+
+    if (!playerLap) return;
+
     const s1Time =
-        parsed.sector1TimeMinutesPart * 60000 +
-        parsed.sector1TimeMSPart;
+        playerLap.sector1TimeMinutesPart * 60000 +
+        playerLap.sector1TimeMSPart;
 
     const s2Time =
-        parsed.sector2TimeMinutesPart * 60000 +
-        parsed.sector2TimeMSPart;
+        playerLap.sector2TimeMinutesPart * 60000 +
+        playerLap.sector2TimeMSPart;
 
-    const gridBestS1 = 0;
-    const gridBestS2 = 0;
-    const gridBestS3 = 0;
+    const gridBestS1 = sessionBests.current.s1 === Infinity ? 0 : sessionBests.current.s1;
+    const gridBestS2 = sessionBests.current.s2 === Infinity ? 0 : sessionBests.current.s2;
+    const gridBestS3 = sessionBests.current.s3 === Infinity ? 0 : sessionBests.current.s3;
 
     // =========================
     // FINE GIRO → CALCOLO S3 + FREEZE
     // =========================
     if (
         trackState.current.lapNum !== -1 &&
-        parsed.currentLapNum > trackState.current.lapNum
+        playerLap.currentLapNum > trackState.current.lapNum
     ) {
         const s3Time =
-            parsed.lastLapTimeInMS -
+            playerLap.lastLapTimeInMS -
             trackState.current.lastS1Time -
             trackState.current.lastS2Time;
 
@@ -48,7 +113,7 @@ export function handleLapData(
             s1Ms: trackState.current.lastS1Time,
             s2Ms: trackState.current.lastS2Time,
             s3Ms: s3Time,
-            lapTimeMs: parsed.lastLapTimeInMS,
+            lapTimeMs: playerLap.lastLapTimeInMS,
             compound: trackState.current.visualTyreCompound,
             tyreAge: trackState.current.tyresAgeLaps
         });
@@ -56,14 +121,14 @@ export function handleLapData(
         trackState.current.liveS1 = null;
         trackState.current.liveS2 = null;
 
-        if (s3Time < personalBests.current.s3) {
+        if (s3Time > 0 && s3Time < personalBests.current.s3) {
             personalBests.current.s3 = s3Time;
         }
     }
 
-    trackState.current.lapNum = parsed.currentLapNum;
+    trackState.current.lapNum = playerLap.currentLapNum;
 
-    const currentSector = parsed.sector;
+    const currentSector = playerLap.sector;
 
     // =========================
     // LIVE S1
@@ -128,7 +193,7 @@ export function handleLapData(
         : empty;
 
     pendingRef.current.lapData = {
-        ...parsed,
+        ...playerLap,
         bestLapTimeInMS:
             personalBests.current.lap === Infinity
                 ? 0
@@ -141,9 +206,9 @@ export function handleLapData(
     // BEST LAP UPDATE
     // =========================
     if (
-        parsed.lastLapTimeInMS > 0 &&
-        parsed.lastLapTimeInMS < personalBests.current.lap
+        playerLap.lastLapTimeInMS > 0 &&
+        playerLap.lastLapTimeInMS < personalBests.current.lap
     ) {
-        personalBests.current.lap = parsed.lastLapTimeInMS;
+        personalBests.current.lap = playerLap.lastLapTimeInMS;
     }
 }

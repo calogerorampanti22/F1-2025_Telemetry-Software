@@ -1,14 +1,17 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Map } from 'lucide-react';
 import { TRACK_PATHS } from '../data/trackPaths';
+import type { ParticipantData } from '../telemetry/types';
+import { TEAM_COLORS } from '../data/teamColors';
 
 interface Props {
   lapDistance: number;
   trackLength: number;
   trackId: number; // Aggiungiamo l'ID per sapere quale pista caricare
+  participant?: ParticipantData;
 }
 
-export const TrackProgressMap: React.FC<Props> = ({ lapDistance, trackLength, trackId }) => {
+export const TrackProgressMap: React.FC<Props> = ({ lapDistance, trackLength, trackId, participant }) => {
   const pathRef = useRef<SVGPathElement>(null);
   const [dotPos, setDotPos] = useState({ x: 0, y: 0 });
 
@@ -40,33 +43,33 @@ export const TrackProgressMap: React.FC<Props> = ({ lapDistance, trackLength, tr
   return (
     <section style={containerStyle}>
       <h3 style={sectionTitle}><Map size={18} /> TRACK PROGRESS</h3>
-      
+
       <div style={mapArea}>
         {trackInfo ? (
           <svg viewBox={trackInfo.viewBox} style={{ ...svgStyle, transform: `rotate(${trackInfo.rotation}deg)` }}>
-              
-              {/* 0. PATH AI FINI DI CALCOLO DEL PUNTO */}
-              <path
-                ref={pathRef}
-                d={trackInfo.trackPathData}
-                fill="none"
-                stroke="none"
-                style={{ display: 'none' }}
+
+            {/* 0. PATH AI FINI DI CALCOLO DEL PUNTO */}
+            <path
+              ref={pathRef}
+              d={trackInfo.trackPathData}
+              fill="none"
+              stroke="none"
+              style={{ display: 'none' }}
+            />
+
+            {/* 1. DISEGNIAMO TUTTO IL CONTENUTO DELL'SVG ORIGINALE */}
+            {/* Usiamo un tag <g> per raggruppare tutto e assicurarci che mantenga gli stili */}
+            <g dangerouslySetInnerHTML={{ __html: trackInfo.svgContent }} />
+
+            {/* 2. IL PALLINO (che scorre sopra tutto) */}
+            {trackLength > 0 && !isNaN(lapDistance) && (
+              <circle
+                cx={dotPos.x}
+                cy={dotPos.y}
+                r="12"
+                fill={participant ? (TEAM_COLORS[participant.teamId] || '#22c55e') : '#22c55e'}
               />
-
-              {/* 1. DISEGNIAMO TUTTO IL CONTENUTO DELL'SVG ORIGINALE */}
-              {/* Usiamo un tag <g> per raggruppare tutto e assicurarci che mantenga gli stili */}
-              <g dangerouslySetInnerHTML={{ __html: trackInfo.svgContent }} />
-
-              {/* 2. IL PALLINO (che scorre sopra tutto) */}
-              {trackLength > 0 && !isNaN(lapDistance) && (
-                  <circle 
-                      cx={dotPos.x} 
-                      cy={dotPos.y} 
-                      r="12" 
-                      fill="#22c55e" 
-                  />
-              )}
+            )}
           </svg>
         ) : (
           <span style={{ color: '#444' }}>PISTA NON SUPPORTATA</span>

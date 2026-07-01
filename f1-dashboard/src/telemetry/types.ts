@@ -23,11 +23,34 @@ export interface TelemetryData {
     // Car Status object
     carStatus: CarStatusData;
 
-    // Lap Data object
+    // Lap Data object (player's data for HUD)
     lapData: LapData;
+
+    // All cars lap data for the Timing Tower
+    allCarsLapData: LapData[];
 
     // Session Data object
     sessionData: SessionData;
+
+    // Participants data (driver info, team, etc.)
+    participants: ParticipantData[];
+}
+
+export interface ParticipantData {
+    aiControlled: number;
+    driverId: number;
+    networkId: number;
+    teamId: number;
+    myTeam: number;
+    raceNumber: number;
+    nationality: number;
+    name: string;
+    yourTelemetry: number;
+    showOnlineNames: number;
+    techLevel: number;
+    platform: number;
+    numColours: number;
+    liveryColour: number[];
 }
 
 // Car Status Data Interface
@@ -72,6 +95,7 @@ export interface LapHistoryEntry {
 
 // Lap Data Interface
 export interface LapData {
+    carIndex: number;
     lastLapTimeInMS: number;
     currentLapTimeInMS: number;
     sector1TimeMSPart: number;

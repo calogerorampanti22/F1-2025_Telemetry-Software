@@ -5,7 +5,11 @@
 
 #include "PacketParser.h"
 #include "F1Structs.h"
-#include "../models/Car.hpp"
+#include "../models/Lap.hpp"
+#include "../models/Session.hpp"
+#include "../models/CarTelemetry.hpp"
+#include "../models/CarStatus.hpp"
+#include "../models/Participant.hpp"
 
 std::string PacketParser::parsePacketToJson(const std::vector<uint8_t>& data) {
     // Security check: The packet must contain almost the header
@@ -26,13 +30,9 @@ std::string PacketParser::parsePacketToJson(const std::vector<uint8_t>& data) {
             PacketSessionData sessionData;
             std::memcpy(&sessionData, data.data(), sizeof(PacketSessionData));
 
-            nlohmann::json sessionDataJSONObject;
+            Session mySession = sessionData;
 
-            sessionDataJSONObject["type"] = "session";
-            sessionDataJSONObject["trackId"] = sessionData.m_trackId;
-            sessionDataJSONObject["trackLength"] = sessionData.m_trackLength;
-
-            return sessionDataJSONObject.dump();
+            return mySession.toJson();
         }
         else {
             std::cerr << "[Session Packet] ERROR: packet dimension not comform" << std::endl;
@@ -44,12 +44,18 @@ std::string PacketParser::parsePacketToJson(const std::vector<uint8_t>& data) {
             PacketLapData lapData;
             std::memcpy(&lapData, data.data(), sizeof(PacketLapData));
 
-            // The packet contains data of all 22 cars
-            // The header indicates which is our car index in these array
-            uint8_t playerIndex = header.m_playerCarIndex;
-            Car myCar = lapData.m_lapData[playerIndex];
+            nlohmann::json laps;
+            laps["type"] = "lapData";
+            laps["playerCarIndex"] = header.m_playerCarIndex;
+            laps["cars"] = nlohmann::json::array();
 
-            return myCar.toJson();
+            for(int i = 0; i < 22; i++) {
+                Lap currentLap(lapData.m_lapData[i], i);
+
+                laps["cars"].push_back(nlohmann::json::parse(currentLap.toJson()));
+            }
+
+            return laps.dump();
 
         }
         else {
@@ -60,7 +66,20 @@ std::string PacketParser::parsePacketToJson(const std::vector<uint8_t>& data) {
         // TODO
     }
     else if(header.m_packetId == 4) { //ID 4 = Participants Packet
-        // TODO
+        if(data.size() == sizeof(PacketParticipantsData)) {
+            PacketParticipantsData participantsData;
+            std::memcpy(&participantsData, data.data(), sizeof(PacketParticipantsData));
+
+            nlohmann::json participants;
+            participants["type"] = "participants";
+            participants["drivers"] = nlohmann::json::array();
+            for(int i = 0; i < 22; i++) {
+                Participant participant(participantsData.m_participants[i]);
+                participants["drivers"].push_back(nlohmann::json::parse(participant.toJson()));
+            }
+
+            return participants.dump();
+        }
     }
     else if(header.m_packetId == 5) { //ID 5 = Car Setup Packet
         // TODO
@@ -74,56 +93,9 @@ std::string PacketParser::parsePacketToJson(const std::vector<uint8_t>& data) {
             // The packet contains data of all 22 cars
             // The header indicates which is our car index in these array
             uint8_t playerIndex = header.m_playerCarIndex;
-            const auto& myCar = telemetry.m_carTelemetryData[playerIndex];
-        
-            // Create JSON object
-            nlohmann::json telemetryJSONObject;
-            telemetryJSONObject["type"] = "telemetry";
-            telemetryJSONObject["speed"] = myCar.m_speed;
-            telemetryJSONObject["throttle"] = myCar.m_throttle;
-            telemetryJSONObject["steer"] = myCar.m_steer;
-            telemetryJSONObject["brake"] = myCar.m_brake;
-            telemetryJSONObject["clutch"] = myCar.m_clutch;
-            telemetryJSONObject["gear"] = myCar.m_gear;
-            telemetryJSONObject["engineRPM"] = myCar.m_engineRPM;
-            telemetryJSONObject["drs"] = myCar.m_drs;
-            telemetryJSONObject["revLightsPercent"] = myCar.m_revLightsPercent;
-            telemetryJSONObject["revLightsBitValue"] = myCar.m_revLightsBitValue;
-            telemetryJSONObject["brakesTemperature"] = {
-                                                        myCar.m_brakesTemperature[0],
-                                                        myCar.m_brakesTemperature[1],
-                                                        myCar.m_brakesTemperature[2],
-                                                        myCar.m_brakesTemperature[3],
-                                                        };
-            telemetryJSONObject["tyresSurfaceTemperature"] = { 
-                                                               myCar.m_tyresSurfaceTemperature[0],
-                                                               myCar.m_tyresSurfaceTemperature[1],
-                                                               myCar.m_tyresSurfaceTemperature[2],
-                                                               myCar.m_tyresSurfaceTemperature[3]
-                                                             };
-            telemetryJSONObject["tyresInnerTemperature"] = { 
-                                                             myCar.m_tyresInnerTemperature[0],
-                                                             myCar.m_tyresInnerTemperature[1],
-                                                             myCar.m_tyresInnerTemperature[2],
-                                                             myCar.m_tyresInnerTemperature[3]
-                                                           };
-
-            telemetryJSONObject["engineTemperature"] = myCar.m_engineTemperature;                                            
+            CarTelemetry myCarTelemetry = telemetry.m_carTelemetryData[playerIndex];
             
-            telemetryJSONObject["tyresPressure"] = { 
-                                                     myCar.m_tyresPressure[0],
-                                                     myCar.m_tyresPressure[1],
-                                                     myCar.m_tyresPressure[2],
-                                                     myCar.m_tyresPressure[3]
-                                                   };
-            telemetryJSONObject["surfaceType"] = { 
-                                                   myCar.m_surfaceType[0],
-                                                   myCar.m_surfaceType[1],
-                                                   myCar.m_surfaceType[2],
-                                                   myCar.m_surfaceType[3]
-                                                 };
-
-            return telemetryJSONObject.dump();
+            return myCarTelemetry.toJson();          
         }
         else {
             std::cerr << "[Car Telemetry Packet] ERROR: packet dimension not comform" << std::endl;
@@ -138,38 +110,10 @@ std::string PacketParser::parsePacketToJson(const std::vector<uint8_t>& data) {
             // The packet contains data of all 22 cars
             // The header indicates which is our car index in these array
             uint8_t playerIndex = header.m_playerCarIndex;
-            const auto& myCar = status.m_carStatusData[playerIndex];
+            CarStatus myCarStatus = status.m_carStatusData[playerIndex];
 
-            // Create JSON Object
-            nlohmann::json statusJSONObject;
-            statusJSONObject["type"] = "carStatus";
-            statusJSONObject["tractionControl"] = myCar.m_tractionControl;
-            statusJSONObject["antiLockBrakes"] = myCar.m_antiLockBrakes;
-            statusJSONObject["fuelMix"] = myCar.m_fuelMix;
-            statusJSONObject["frontBrakeBias"] = myCar.m_frontBrakeBias;
-            statusJSONObject["pitLimiterStatus"] = myCar.m_pitLimiterStatus;
-            statusJSONObject["fuelInTank"] = myCar.m_fuelInTank;
-            statusJSONObject["fuelCapacity"] = myCar.m_fuelCapacity;
-            statusJSONObject["fuelRemainingLaps"] = myCar.m_fuelRemainingLaps;
-            statusJSONObject["maxRPM"] = myCar.m_maxRPM;
-            statusJSONObject["idleRPM"] = myCar.m_idleRPM;
-            statusJSONObject["maxGears"] = myCar.m_maxGears;
-            statusJSONObject["drsAllowed"] = myCar.m_drsAllowed;
-            statusJSONObject["drsActivationDistance"] = myCar.m_drsActivationDistance;
-            statusJSONObject["actualTyreCompound"] = myCar.m_actualTyreCompound;
-            statusJSONObject["visualTyreCompound"] = myCar.m_visualTyreCompound;
-            statusJSONObject["tyresAgeLaps"] = myCar.m_tyresAgeLaps;
-            statusJSONObject["vehicleFiaFlags"] = myCar.m_vehicleFiaFlags;
-            statusJSONObject["enginePowerICE"] = myCar.m_enginePowerICE;
-            statusJSONObject["enginePowerMGUK"] = myCar.m_enginePowerMGUK;
-            statusJSONObject["ersStoreEnergy"] = myCar.m_ersStoreEnergy;
-            statusJSONObject["ersDeployMode"] = myCar.m_ersDeployMode;
-            statusJSONObject["ersHarvestedThisLapMGUK"] = myCar.m_ersHarvestedThisLapMGUK;
-            statusJSONObject["ersHarvestedThisLapMGUH"] = myCar.m_ersHarvestedThisLapMGUH;
-            statusJSONObject["ersDeployedThisLap"] = myCar.m_ersDeployedThisLap;
-            statusJSONObject["networkPaused"] = myCar.m_networkPaused;
+            return myCarStatus.toJson();
 
-            return statusJSONObject.dump();
         }
         else {
             std::cerr << "[Car Status Packet] ERROR: packet dimension not comform" << std::endl;
