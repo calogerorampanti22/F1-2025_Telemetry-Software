@@ -10,6 +10,7 @@
 #include "../models/CarTelemetry.hpp"
 #include "../models/CarStatus.hpp"
 #include "../models/Participant.hpp"
+#include "../models/SessionHistory.hpp"
 
 std::string PacketParser::parsePacketToJson(const std::vector<uint8_t>& data) {
     // Security check: The packet must contain almost the header
@@ -130,7 +131,13 @@ std::string PacketParser::parsePacketToJson(const std::vector<uint8_t>& data) {
         // TODO
     }
     else if(header.m_packetId == 11) { //ID 11 = Session History Packet
-        // TODO
+        if (data.size() == sizeof(PacketSessionHistoryData)) {
+            PacketSessionHistoryData historyData;
+            std::memcpy(&historyData, data.data(), sizeof(PacketSessionHistoryData));
+
+            SessionHistory myHistory(historyData);
+            return myHistory.toJson();
+        }
     }
     else if(header.m_packetId == 12) { //ID 12 = Tyre Sets Packet
         // TODO

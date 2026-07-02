@@ -35,6 +35,8 @@ export interface AppState {
     drivers: Driver[];
     sessionData: SessionData;
     playerCarIndex: number;
+    sessionBests?: { s1: number, s2: number, s3: number };
+    personalBests?: { s1: number, s2: number, s3: number, lap: number };
 }
 
 export interface ParticipantData {
@@ -142,4 +144,5 @@ export interface LapData {
 export interface SessionData {
     trackId: number;
     trackLength: number;
+    sessionType?: number;
 }

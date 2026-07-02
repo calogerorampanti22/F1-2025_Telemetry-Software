@@ -57,9 +57,10 @@ export const evaluateSector = (timeMs: number, bestMs: number, gridBestMs: numbe
         status = 'green';
     }
 
-    // Il delta parziale visualizzato rimane calcolato rispetto al proprio miglior tempo personale
-    const deltaMs = timeMs - bestMs;
-    const deltaStr = bestMs === Infinity ? '' : formatDelta(deltaMs);
+    // Il delta parziale visualizzato viene calcolato rispetto al record della sessione se disponibile, altrimenti rispetto al personale
+    const referenceMs = gridBestMs > 0 ? gridBestMs : bestMs;
+    const deltaMs = timeMs - referenceMs;
+    const deltaStr = referenceMs === Infinity ? '' : formatDelta(deltaMs);
 
     let deltaColor = '#eab308'; // Giallo
     if (status === 'purple') deltaColor = '#a855f7'; // Fucsia

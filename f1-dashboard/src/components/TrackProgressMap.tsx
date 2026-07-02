@@ -67,7 +67,7 @@ export const TrackProgressMap: React.FC<Props> = ({ lapDistance, trackLength, tr
                 cx={dotPos.x}
                 cy={dotPos.y}
                 r="12"
-                fill={participant ? (TEAM_COLORS[participant.teamId] || '#22c55e') : '#22c55e'}
+                fill={participant ? (TEAM_COLORS[participant.teamId] || '#202421ff') : '#202421ff'}
               />
             )}
           </svg>

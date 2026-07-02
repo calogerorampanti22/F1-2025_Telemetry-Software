@@ -17,7 +17,9 @@ export function useTelemetry() {
     const [state, setState] = useState<AppState>(() => ({
         drivers: Array.from({ length: 22 }, (_, i) => ({ carIndex: i })),
         sessionData: {} as SessionData,
-        playerCarIndex: 0
+        playerCarIndex: 0,
+        sessionBests: { s1: Infinity, s2: Infinity, s3: Infinity },
+        personalBests: { s1: Infinity, s2: Infinity, s3: Infinity, lap: Infinity }
     }));
 
     const [isConnected, setIsConnected] = useState(false);
@@ -46,7 +48,8 @@ export function useTelemetry() {
     const gridCarsState = useRef(new Array(22).fill(null).map(() => ({
         lapNum: -1,
         lastS1: 0,
-        lastS2: 0
+        lastS2: 0,
+        bestLap: 0
     })));
 
     const lapHistory = useRef<LapHistoryEntry[]>([]);
@@ -80,7 +83,9 @@ export function useTelemetry() {
             setState({
                 drivers: [...stateRef.current.drivers],
                 sessionData: { ...stateRef.current.sessionData },
-                playerCarIndex: stateRef.current.playerCarIndex
+                playerCarIndex: stateRef.current.playerCarIndex,
+                sessionBests: { ...sessionBests.current },
+                personalBests: { ...personalBests.current }
             });
         };
 
@@ -115,6 +120,43 @@ export function useTelemetry() {
                     break;
 
                 case 'session':
+                    const prevSessionType = stateRef.current.sessionData?.sessionType;
+                    const newSessionType = parsed.sessionType;
+                    
+                    if (prevSessionType !== undefined && prevSessionType !== newSessionType) {
+                        // Reset session stats on session change (e.g. Q2 -> Q3)
+                        personalBests.current = { lap: Infinity, s1: Infinity, s2: Infinity, s3: Infinity };
+                        sessionBests.current = { s1: Infinity, s2: Infinity, s3: Infinity };
+                        lapHistory.current = [];
+                        
+                        gridCarsState.current = new Array(22).fill(null).map(() => ({
+                            lapNum: -1, lastS1: 0, lastS2: 0, bestLap: 0
+                        }));
+                        
+                        trackState.current = {
+                            lapNum: -1,
+                            liveS1: null, liveS2: null,
+                            frozenS1: null, frozenS2: null, frozenS3: null,
+                            holdUntil: 0,
+                            lastS1Time: Infinity, lastS2Time: Infinity, lastS3Time: Infinity,
+                            visualTyreCompound: 16, tyresAgeLaps: 0
+                        };
+                        
+                        // Clear lapData bests inside drivers array
+                        for (let i = 0; i < stateRef.current.drivers.length; i++) {
+                            const driver = stateRef.current.drivers[i];
+                            if (driver && driver.lapData) {
+                                driver.lapData.lapHistory = [];
+                                driver.lapData.bestLapTimeInMS = 0;
+                                driver.lapData.sectorData = [
+                                    { status: 'none', timeStr: '', deltaStr: '', deltaColor: '' },
+                                    { status: 'none', timeStr: '', deltaStr: '', deltaColor: '' },
+                                    { status: 'none', timeStr: '', deltaStr: '', deltaColor: '' }
+                                ];
+                            }
+                        }
+                    }
+                    
                     handleSession(parsed, stateRef);
                     break;
 
@@ -124,6 +166,19 @@ export function useTelemetry() {
                     for (let i = 0; i < drivers.length; i++) {
                         if (stateRef.current.drivers[i]) {
                             stateRef.current.drivers[i].participant = drivers[i];
+                        }
+                    }
+                    break;
+                case 'sessionHistory':
+                    const idx = parsed.carIdx;
+                    if (stateRef.current.drivers[idx] && stateRef.current.drivers[idx].lapData) {
+                        // If the backend has a best lap (nonzero) we prefer it as it's official and covers historical laps.
+                        if (parsed.bestLapTimeInMS > 0) {
+                            stateRef.current.drivers[idx].lapData!.bestLapTimeInMS = parsed.bestLapTimeInMS;
+                            // Also update gridCarsState so lapDataHandler doesn't overwrite it incorrectly
+                            if (gridCarsState.current[idx]) {
+                                gridCarsState.current[idx].bestLap = parsed.bestLapTimeInMS;
+                            }
                         }
                     }
                     break;

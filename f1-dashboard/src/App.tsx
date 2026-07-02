@@ -10,14 +10,21 @@ import { useTelemetry } from './hooks/useTelemetry';
 
 function App() {
   const { state, isConnected } = useTelemetry();
-  
+
   const playerIndex = state.playerCarIndex ?? 0;
   const player = state.drivers[playerIndex];
-  
+
   // Safe defaults
   const pTelemetry = player?.telemetry || {} as any;
   const pCarStatus = player?.carStatus || {} as any;
   const pLapData = player?.lapData || {} as any;
+
+  let globalBestLapTimeMs = Infinity;
+  state.drivers.forEach(d => {
+    if (d.lapData?.bestLapTimeInMS && d.lapData.bestLapTimeInMS > 0 && d.lapData.bestLapTimeInMS < globalBestLapTimeMs) {
+      globalBestLapTimeMs = d.lapData.bestLapTimeInMS;
+    }
+  });
 
   return (
     <div style={containerStyle}>
@@ -30,12 +37,13 @@ function App() {
           <TimingTower
             drivers={state.drivers}
             playerCarIndex={playerIndex}
+            sessionType={state.sessionData.sessionType}
           />
         </div>
 
         {/* COLONNA DESTRA */}
         <div style={rightColumnStyle}>
-          
+
           <div style={{ gridColumn: '1', gridRow: '1 / span 2' }}>
             <LapTimeMonitor
               currentLapTime={formatLapTime(pLapData.currentLapTimeInMS)}
@@ -47,6 +55,9 @@ function App() {
               lapHistory={pLapData.lapHistory || []}
               compoundId={pCarStatus.visualTyreCompound || 16}
               tyreAge={pCarStatus.tyresAgeLaps || 0}
+              sessionBests={state.sessionBests}
+              personalBests={state.personalBests}
+              globalBestLapTimeMs={globalBestLapTimeMs}
             />
           </div>
 
@@ -66,10 +77,10 @@ function App() {
           <div style={{ gridColumn: '3', gridRow: '1' }}>
             <CarMonitor
               engineTemperature={pTelemetry.engineTemperature || 0}
-              brakesTemperature={pTelemetry.brakesTemperature || [0,0,0,0]}
-              tyresSurfaceTemps={pTelemetry.tyresSurfaceTemperature || [0,0,0,0]}
-              tyresInnerTemps={pTelemetry.tyresInnerTemperature || [0,0,0,0]}
-              tyresPressure={pTelemetry.tyresPressure || [0,0,0,0]}
+              brakesTemperature={pTelemetry.brakesTemperature || [0, 0, 0, 0]}
+              tyresSurfaceTemps={pTelemetry.tyresSurfaceTemperature || [0, 0, 0, 0]}
+              tyresInnerTemps={pTelemetry.tyresInnerTemperature || [0, 0, 0, 0]}
+              tyresPressure={pTelemetry.tyresPressure || [0, 0, 0, 0]}
               tyresCompound={pCarStatus.visualTyreCompound || 16}
               tyresAgeLaps={pCarStatus.tyresAgeLaps || 0}
             />
@@ -94,7 +105,7 @@ const containerStyle: React.CSSProperties = {
   backgroundColor: '#0a0a0a',
   color: '#fff',
   minHeight: '100vh',
-  padding: '40px 20px', 
+  padding: '40px 20px',
   fontFamily: '"JetBrains Mono", monospace',
   width: '100%',
   boxSizing: 'border-box'

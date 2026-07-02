@@ -43,6 +43,7 @@ add_executable(f1_telemetry
     src/models/Session.hpp
     src/models/CarTelemetry.hpp
     src/models/CarStatus.hpp
+    src/models/SessionHistory.hpp
 )
 
 if(MINGW)

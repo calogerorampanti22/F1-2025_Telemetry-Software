@@ -21,6 +21,7 @@ export function handleLapData(
         for (let i = 0; i < cars.length; i++) {
             if (stateRef.current.drivers[i]) {
                 stateRef.current.drivers[i].lapData = cars[i];
+                // we will inject bestLapTimeInMS below after evaluating gridCarsState
             }
         }
 
@@ -31,7 +32,7 @@ export function handleLapData(
 
         // Safely initialize gridCarsState if corrupted by Fast Refresh
         if (!Array.isArray(gridCarsState.current) || gridCarsState.current.length < cars.length) {
-            gridCarsState.current = new Array(22).fill(null).map(() => ({ lapNum: -1, lastS1: 0, lastS2: 0 }));
+            gridCarsState.current = new Array(22).fill(null).map(() => ({ lapNum: -1, lastS1: 0, lastS2: 0, bestLap: 0 }));
         }
 
         // Calculate session bests from all cars
@@ -63,12 +64,24 @@ export function handleLapData(
                         sessionBests.current.s3 = s3;
                     }
                 }
+
+                if (car.lastLapTimeInMS > 0) {
+                    if (!state.bestLap || car.lastLapTimeInMS < state.bestLap) {
+                        state.bestLap = car.lastLapTimeInMS;
+                    }
+                }
+
                 // Reset sectors for new lap
                 state.lastS1 = 0;
                 state.lastS2 = 0;
             }
             
             state.lapNum = car.currentLapNum;
+            
+            // Inject bestLapTimeInMS for all cars
+            if (stateRef.current.drivers[i] && stateRef.current.drivers[i].lapData) {
+                stateRef.current.drivers[i].lapData.bestLapTimeInMS = state.bestLap || 0;
+            }
         }
     } else {
         // Fallback for old parser executable
@@ -171,6 +184,15 @@ export function handleLapData(
         }
 
         trackState.current.lastS2Time = s2Time;
+    }
+
+    // =========================
+    // PIT ENTRY RESET
+    // =========================
+    if (playerLap.pitStatus === 1 || playerLap.pitStatus === 2) {
+        trackState.current.liveS1 = null;
+        trackState.current.liveS2 = null;
+        trackState.current.holdUntil = 0; // stop frozen display
     }
 
     // =========================

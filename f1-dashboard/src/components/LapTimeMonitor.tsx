@@ -35,6 +35,9 @@ interface Props {
   lapHistory?: LapHistoryEntry[];
   compoundId: number;
   tyreAge: number;
+  sessionBests?: { s1: number, s2: number, s3: number };
+  personalBests?: { s1: number, s2: number, s3: number, lap: number };
+  globalBestLapTimeMs?: number;
 }
 
 export const LapTimeMonitor: React.FC<Props> = ({
@@ -44,7 +47,10 @@ export const LapTimeMonitor: React.FC<Props> = ({
   deltaStr,
   sectors,
   carPosition,
-  lapHistory
+  lapHistory,
+  sessionBests,
+  personalBests,
+  globalBestLapTimeMs
 }) => {
   // 🔐 SAFETY: evita crash se undefined
   const safeHistory: LapHistoryEntry[] = lapHistory ?? [];
@@ -180,11 +186,21 @@ export const LapTimeMonitor: React.FC<Props> = ({
 
             <tbody>
               {safeHistory.map((lap, idx) => {
-                const isBestS1 = lap.s1Ms > 0 && lap.s1Ms === best.bestS1;
-                const isBestS2 = lap.s2Ms > 0 && lap.s2Ms === best.bestS2;
-                const isBestS3 = lap.s3Ms > 0 && lap.s3Ms === best.bestS3;
-                const isBestLap =
-                  lap.lapTimeMs > 0 && lap.lapTimeMs === best.bestLap;
+                const sBests = sessionBests || { s1: Infinity, s2: Infinity, s3: Infinity };
+                const pBests = personalBests || { s1: Infinity, s2: Infinity, s3: Infinity, lap: Infinity };
+                
+                const isPurpleS1 = lap.s1Ms > 0 && lap.s1Ms <= sBests.s1;
+                const isGreenS1 = lap.s1Ms > 0 && !isPurpleS1 && lap.s1Ms <= pBests.s1;
+                
+                const isPurpleS2 = lap.s2Ms > 0 && lap.s2Ms <= sBests.s2;
+                const isGreenS2 = lap.s2Ms > 0 && !isPurpleS2 && lap.s2Ms <= pBests.s2;
+                
+                const isPurpleS3 = lap.s3Ms > 0 && lap.s3Ms <= sBests.s3;
+                const isGreenS3 = lap.s3Ms > 0 && !isPurpleS3 && lap.s3Ms <= pBests.s3;
+                
+                const gBestLap = globalBestLapTimeMs !== undefined ? globalBestLapTimeMs : Infinity;
+                const isPurpleLap = lap.lapTimeMs > 0 && lap.lapTimeMs <= gBestLap;
+                const isGreenLap = lap.lapTimeMs > 0 && !isPurpleLap && lap.lapTimeMs <= pBests.lap;
 
                 return (
                   <tr key={lap.lapNum || idx} style={tableRow}>
@@ -195,7 +211,7 @@ export const LapTimeMonitor: React.FC<Props> = ({
                     <td
                       style={{
                         ...tableCell,
-                        color: isBestS1 ? '#a855f7' : '#ddd'
+                        color: isPurpleS1 ? '#a855f7' : isGreenS1 ? '#22c55e' : '#ddd'
                       }}
                     >
                       {formatSectorTime(lap.s1Ms) || '-'}
@@ -204,7 +220,7 @@ export const LapTimeMonitor: React.FC<Props> = ({
                     <td
                       style={{
                         ...tableCell,
-                        color: isBestS2 ? '#a855f7' : '#ddd'
+                        color: isPurpleS2 ? '#a855f7' : isGreenS2 ? '#22c55e' : '#ddd'
                       }}
                     >
                       {formatSectorTime(lap.s2Ms) || '-'}
@@ -213,7 +229,7 @@ export const LapTimeMonitor: React.FC<Props> = ({
                     <td
                       style={{
                         ...tableCell,
-                        color: isBestS3 ? '#a855f7' : '#ddd'
+                        color: isPurpleS3 ? '#a855f7' : isGreenS3 ? '#22c55e' : '#ddd'
                       }}
                     >
                       {formatSectorTime(lap.s3Ms) || '-'}
@@ -222,7 +238,7 @@ export const LapTimeMonitor: React.FC<Props> = ({
                     <td
                       style={{
                         ...tableCell,
-                        color: isBestLap ? '#a855f7' : '#fff',
+                        color: isPurpleLap ? '#a855f7' : isGreenLap ? '#22c55e' : '#fff',
                         fontWeight: 'bold'
                       }}
                     >
