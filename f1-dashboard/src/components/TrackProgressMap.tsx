@@ -72,7 +72,7 @@ export const TrackProgressMap: React.FC<Props> = ({ lapDistance, trackLength, tr
             )}
           </svg>
         ) : (
-          <span style={{ color: '#444' }}>PISTA NON SUPPORTATA</span>
+          <span style={{ color: '#444' }}>IN ATTESA DI DATI...</span>
         )}
       </div>
     </section>

@@ -109,10 +109,17 @@ export function handleLapData(
     // =========================
     // FINE GIRO → CALCOLO S3 + FREEZE
     // =========================
-    if (
-        trackState.current.lapNum !== -1 &&
-        playerLap.currentLapNum > trackState.current.lapNum
-    ) {
+    const isNewLap = trackState.current.lapNum !== -1 && playerLap.currentLapNum > trackState.current.lapNum;
+    const isSessionFinished = playerLap.resultStatus === 3 && !trackState.current.hasFinishedRace;
+
+    if (playerLap.resultStatus !== 3) {
+        trackState.current.hasFinishedRace = false;
+    }
+
+    if (isNewLap || isSessionFinished) {
+        if (isSessionFinished) {
+            trackState.current.hasFinishedRace = true;
+        }
         const s3Time =
             playerLap.lastLapTimeInMS -
             trackState.current.lastS1Time -

@@ -68,23 +68,6 @@ export const LapTimeMonitor: React.FC<Props> = ({
     }
   };
 
-  // ⚡ single pass (più efficiente di 4 map separate)
-  const best = React.useMemo(() => {
-    let bestS1 = Infinity;
-    let bestS2 = Infinity;
-    let bestS3 = Infinity;
-    let bestLap = Infinity;
-
-    for (const l of safeHistory) {
-      if (l.s1Ms > 0) bestS1 = Math.min(bestS1, l.s1Ms);
-      if (l.s2Ms > 0) bestS2 = Math.min(bestS2, l.s2Ms);
-      if (l.s3Ms > 0) bestS3 = Math.min(bestS3, l.s3Ms);
-      if (l.lapTimeMs > 0) bestLap = Math.min(bestLap, l.lapTimeMs);
-    }
-
-    return { bestS1, bestS2, bestS3, bestLap };
-  }, [safeHistory]);
-
   const safeSectors = sectors ?? [];
 
   return (
@@ -111,8 +94,8 @@ export const LapTimeMonitor: React.FC<Props> = ({
               color: deltaStr.startsWith('-')
                 ? '#22c55e'
                 : deltaStr.startsWith('+')
-                ? '#ef4444'
-                : '#555'
+                  ? '#ef4444'
+                  : '#555'
             }}
           >
             {deltaStr}
@@ -188,16 +171,16 @@ export const LapTimeMonitor: React.FC<Props> = ({
               {safeHistory.map((lap, idx) => {
                 const sBests = sessionBests || { s1: Infinity, s2: Infinity, s3: Infinity };
                 const pBests = personalBests || { s1: Infinity, s2: Infinity, s3: Infinity, lap: Infinity };
-                
+
                 const isPurpleS1 = lap.s1Ms > 0 && lap.s1Ms <= sBests.s1;
                 const isGreenS1 = lap.s1Ms > 0 && !isPurpleS1 && lap.s1Ms <= pBests.s1;
-                
+
                 const isPurpleS2 = lap.s2Ms > 0 && lap.s2Ms <= sBests.s2;
                 const isGreenS2 = lap.s2Ms > 0 && !isPurpleS2 && lap.s2Ms <= pBests.s2;
-                
+
                 const isPurpleS3 = lap.s3Ms > 0 && lap.s3Ms <= sBests.s3;
                 const isGreenS3 = lap.s3Ms > 0 && !isPurpleS3 && lap.s3Ms <= pBests.s3;
-                
+
                 const gBestLap = globalBestLapTimeMs !== undefined ? globalBestLapTimeMs : Infinity;
                 const isPurpleLap = lap.lapTimeMs > 0 && lap.lapTimeMs <= gBestLap;
                 const isGreenLap = lap.lapTimeMs > 0 && !isPurpleLap && lap.lapTimeMs <= pBests.lap;

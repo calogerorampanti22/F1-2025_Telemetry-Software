@@ -57,8 +57,13 @@ export const evaluateSector = (timeMs: number, bestMs: number, gridBestMs: numbe
         status = 'green';
     }
 
-    // Il delta parziale visualizzato viene calcolato rispetto al record della sessione se disponibile, altrimenti rispetto al personale
-    const referenceMs = gridBestMs > 0 ? gridBestMs : bestMs;
+    // Il delta parziale visualizzato viene calcolato:
+    // - se fucsia: rispetto al record della sessione
+    // - se verde o giallo: rispetto al record personale
+    let referenceMs = bestMs;
+    if (status === 'purple' && gridBestMs > 0) {
+        referenceMs = gridBestMs;
+    }
     const deltaMs = timeMs - referenceMs;
     const deltaStr = referenceMs === Infinity ? '' : formatDelta(deltaMs);
 
