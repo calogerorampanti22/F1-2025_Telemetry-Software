@@ -1,4 +1,4 @@
-# F1 20225 UDP Telemetry Software
+# F1 2025 Telemetry Software & Dashboard
 
 🌍 **Language Selection / Scelta della lingua:**
 * [🇮🇹 Italiano](#-italiano)
@@ -8,104 +8,111 @@
 
 ## 🇮🇹 Italiano
 
-Un client leggero e ad alte prestazioni scritto in C++ per ricevere e decodificare i pacchetti di telemetria UDP generati da EA Sports F1® 25. 
+### 🏁 Introduzione
+Questo progetto è una soluzione completa per l'acquisizione e la visualizzazione dei dati telemetrici di **EA Sports F1® 25**. È composto da due componenti principali:
+1. **Backend / Parser (C++)**: Un client UDP leggero e ad altissime prestazioni per ricevere e decodificare i pacchetti grezzi dal gioco.
+2. **Frontend / Dashboard (React)**: Un'interfaccia utente moderna e reattiva che visualizza in tempo reale i dati essenziali, come l'indicatore delle marce, i tempi sul giro, la mappa del tracciato e la torre dei tempi (Timing Tower).
 
-Questo progetto cattura il flusso di dati grezzi in tempo reale (come giri motore, velocità, marce, temperature e tempi sul giro) e li converte in strutture dati C++ pronte per essere utilizzate in dashboard, simulatori di movimento o log per l'analisi post-gara.
+### 🚀 Funzionalità Principali
+- **Parsing Binario Zero-Overhead:** Decodifica diretta in C++ tramite strutture `packed` senza allocazioni dinamiche inutili, assicurando latenza minima.
+- **Architettura Multithreading:** Separazione ottimizzata tra il thread in ascolto UDP e il bridge/interfaccia per evitare la perdita di pacchetti.
+- **Dashboard in Tempo Reale:** UI pulita ispirata alle grafiche televisive, che mostra distacchi, mescole di gomme, età delle gomme e penalità.
+- **Pieno supporto a F1 25:** Costruito rispettando le specifiche ufficiali dei pacchetti UDP 2025 (Packet ID 0-15).
 
-### 🚀 Funzionalità
+### 🛠️ Tecnologie e Librerie Esterne Utilizzate
+Questo progetto si appoggia a standard industriali e moderne librerie open-source:
+- **C++17** & **CMake**: Per la compilazione del core e del ricevitore UDP.
+- **nlohmann/json**: Per una gestione moderna e rapida della serializzazione e deserializzazione dei dati in formato JSON.
+- **Crow**: Microframework web in C++ veloce e leggero per la comunicazione tramite WebSocket con il frontend.
+- **React 19** & **TypeScript**: Per garantire un'interfaccia utente solida, fortemente tipizzata e component-based.
+- **Vite**: Come build tool e dev server estremamente rapido per il frontend.
+- **Lucide-React**: Per l'inclusione di icone vettoriali moderne e leggere all'interno della dashboard.
+- **ESLint**: Linter per mantenere alto lo standard qualitativo del codice sorgente.
 
-* **Parsing Binario Zero-Overhead:** Decodifica diretta dei byte in arrivo tramite strutture `packed` senza allocazioni dinamiche inutili.
-* **Architettura Multithreading:** Separazione tra il thread in ascolto sul socket UDP e il thread di elaborazione/UI per non perdere alcun pacchetto.
-* **Pronto per F1 25:** Strutture dati basate sulle specifiche ufficiali del formato 2025 (Packet ID 0-15).
+### ⚙️ Installazione e Compilazione
 
-### 🛠️ Prerequisiti
-
-* Compilatore C++ (supporto a C++11 o superiore).
-* [CMake](https://cmake.org/) (versione 3.10 o superiore).
-
-### ⚙️ Compilazione
-
-Il progetto utilizza CMake per la generazione dei file di build. Apri il terminale nella directory principale del progetto ed esegui:
-
+#### 1. Compilazione del Parser C++
+Assicurati di avere CMake installato. Apri il terminale nella root del progetto ed esegui:
 ```bash
 mkdir build
 cd build
 cmake ..
 cmake --build .
 ```
-
 L'eseguibile verrà generato all'interno della cartella `build/` (o `build/Debug` / `build/Release` su Windows).
 
-### 🎮 Utilizzo e Configurazione in Gioco
-Per fare in modo che l'app riceva i dati, devi abilitare la telemetria all'interno di F1 25:
+#### 2. Avvio della Dashboard (Frontend)
+Assicurati di avere Node.js installato. Apri il terminale ed esegui:
+```bash
+cd f1-dashboard
+npm install
+npm run dev
+```
 
-1. Vai su Impostazioni > Impostazioni Telemetria.
+### 🎮 Configurazione in F1 25
+Per permettere all'app di ricevere i dati, abilita la telemetria nel gioco:
+1. Vai su **Impostazioni > Impostazioni Telemetria**.
+2. **Telemetria UDP**: Sì.
+3. **Indirizzo IP**: `127.0.0.1` (o l'IP del dispositivo su cui è in esecuzione).
+4. **Porta UDP**: `20777`.
+5. **Formato UDP**: `2025`.
+6. **Frequenza di Trasmissione**: Scegli una frequenza come 20Hz o 60Hz.
 
-2. Imposta Telemetria UDP su Sì.
-
-3. Imposta Indirizzo IP su 127.0.0.1 (se giochi e tieni l'app sullo stesso PC) o sull'IP del dispositivo su cui gira l'app.
-
-4. Assicurati che la Porta UDP sia 20777.
-
-5. Imposta il Formato UDP su 2025.
-
-6. Scegli la Frequenza di Trasmissione desiderata (es. 20Hz o 60Hz).
-
-Una volta configurato il gioco, avvia l'eseguibile compilato e inizierai a ricevere i dati non appena scenderai in pista.
-
-### ⚠️ Disclaimer Legale
-Questo è un progetto amatoriale, open-source e non ufficiale. Non è in alcun modo affiliato, sponsorizzato, approvato o associato a EA Sports, Electronic Arts Inc., Codemasters, o alle società del gruppo Formula One.
-
-Tutte le informazioni sulla struttura dei pacchetti derivano dalla documentazione pubblica rilasciata sui forum ufficiali EA per sviluppatori di terze parti. I marchi "F1", "Formula 1", "FIA Formula One World Championship" e i relativi loghi sono marchi registrati di Formula One Licensing BV e della Federation Internationale de l'Automobile (FIA). Tutti i diritti appartengono ai rispettivi proprietari.
-
-### 📄 Licenza
-Questo progetto è distribuito sotto licenza GNU GPL v3. Vedi il file LICENSE nella root del repository per maggiori informazioni.
+---
 
 ## 🇬🇧 English
-A lightweight, high-performance C++ client to receive and decode UDP telemetry packets generated by EA Sports F1® 25.
 
-This project captures real-time raw data streams (such as engine RPM, speed, gears, temperatures, and lap times) and maps them into C++ data structures ready to be used in dashboards, motion simulators, or post-race analysis logs.
+### 🏁 Introduction
+This project is a complete solution for capturing and visualizing telemetry data from **EA Sports F1® 25**. It consists of two main components:
+1. **Backend / Parser (C++)**: A lightweight, high-performance UDP client that receives and decodes raw packets from the game.
+2. **Frontend / Dashboard (React)**: A modern, reactive user interface that displays real-time essential data, such as gear indicators, lap times, a track progress map, and a timing tower.
 
-### 🚀 Features
-Zero-Overhead Binary Parsing: Direct decoding of incoming bytes using packed structures without unnecessary dynamic memory allocations.
+### 🚀 Key Features
+- **Zero-Overhead Binary Parsing:** Direct C++ decoding via `packed` structures with no unnecessary dynamic allocations, ensuring ultra-low latency.
+- **Multithreaded Architecture:** Optimized separation between the UDP listening thread and the UI/bridge to prevent packet loss.
+- **Real-Time Dashboard:** A clean UI inspired by TV broadcast graphics, displaying gaps, tyre compounds, tyre age, and penalties.
+- **F1 25 Ready:** Fully compliant with the official 2025 UDP packet format specifications (Packet IDs 0-15).
 
-Multithreaded Architecture: Clean separation between the UDP socket listening thread and the processing/UI thread to ensure no packets are dropped.
+### 🛠️ Technologies & External Libraries Used
+This project relies on industry standards and modern open-source libraries:
+- **C++17** & **CMake**: For compiling the core UDP receiver.
+- **nlohmann/json**: For modern, fast, and seamless JSON data serialization and deserialization.
+- **Crow**: A fast and lightweight C++ web microframework for WebSocket communication with the frontend.
+- **React 19** & **TypeScript**: Providing a solid, strongly-typed, and component-based UI architecture.
+- **Vite**: Used as an extremely fast frontend build tool and development server.
+- **Lucide-React**: For including crisp, modern vector icons within the dashboard.
+- **ESLint**: For keeping high source code quality standards.
 
-Ready for F1 25: Data structures fully based on the official 2025 format specifications (Packet IDs 0-15).
+### ⚙️ Installation & Build Instructions
 
-### 🛠️ Prerequisites
-C++ Compiler (C++11 support or higher).
-
-CMake (version 3.10 or higher).
-
-### ⚙️ Build Instructions
-The project uses CMake to generate build files. Open a terminal in the root directory of the project and run:
-
+#### 1. Building the C++ Parser
+Make sure CMake is installed. Open a terminal in the root directory and run:
 ```bash
 mkdir build
 cd build
 cmake ..
 cmake --build .
 ```
-
 The executable will be generated inside the `build/` folder (or `build/Debug` / `build/Release` on Windows).
 
-### 🎮 Usage and In-Game Configuration
-To allow the application to receive data, you must enable telemetry within F1 25:
+#### 2. Starting the Dashboard (Frontend)
+Ensure Node.js is installed. Open a terminal and run:
+```bash
+cd f1-dashboard
+npm install
+npm run dev
+```
 
-1. Go to Settings > Telemetry Settings.
+### 🎮 In-Game Configuration
+To allow the application to receive data, enable telemetry in F1 25:
+1. Go to **Settings > Telemetry Settings**.
+2. **UDP Telemetry**: On.
+3. **IP Address**: `127.0.0.1` (or the IP of your running device).
+4. **UDP Port**: `20777`.
+5. **UDP Format**: `2025`.
+6. **Send Rate**: Choose a rate like 20Hz or 60Hz.
 
-2. Set UDP Telemetry to On.
-
-3. Set IP Address to 127.0.0.1 (if you play and run the app on the same PC) or to the target device's IP.
-
-4. Ensure the UDP Port is set to 20777.
-
-5. Set the UDP Format to 2025.
-
-6. Choose your desired Send Rate (e.g., 20Hz or 60Hz).
-
-Once the game is configured, launch the compiled executable and you will start receiving data as soon as you hit the track.
+---
 
 ### ⚠️ Legal Disclaimer
 This is an amateur, open-source, and unofficial project. It is in no way affiliated with, sponsored by, endorsed by, or associated with EA Sports, Electronic Arts Inc., Codemasters, or any Formula One group companies.
