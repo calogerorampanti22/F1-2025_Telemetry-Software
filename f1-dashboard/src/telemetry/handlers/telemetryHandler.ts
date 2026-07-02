@@ -1,19 +1,23 @@
-export function handleTelemetry(parsed: any, pendingRef: any) {
-    pendingRef.current.speed = parsed.speed;
-    pendingRef.current.throttle = parsed.throttle;
-    pendingRef.current.steer = parsed.steer;
-    pendingRef.current.brake = parsed.brake;
-    pendingRef.current.clutch = parsed.clutch;
-    pendingRef.current.gear = parsed.gear;
-    pendingRef.current.engineRPM = parsed.engineRPM;
-    pendingRef.current.drs = parsed.drs;
-    pendingRef.current.revLightsPercent = parsed.revLightsPercent;
-    pendingRef.current.revLightsBitValue = parsed.revLightsBitValue;
-    pendingRef.current.engineTemperature = parsed.engineTemperature;
+export function handleTelemetry(parsed: any, stateRef: any) {
+    const playerIndex = stateRef.current.playerCarIndex ?? 0;
+    if (!stateRef.current.drivers[playerIndex]) return;
 
-    pendingRef.current.brakesTemperature = parsed.brakesTemperature;
-    pendingRef.current.tyresSurfaceTemperature = parsed.tyresSurfaceTemperature;
-    pendingRef.current.tyresInnerTemperature = parsed.tyresInnerTemperature;
-    pendingRef.current.tyresPressure = parsed.tyresPressure;
-    pendingRef.current.surfaceType = parsed.surfaceType;
+    stateRef.current.drivers[playerIndex].telemetry = {
+        speed: parsed.speed,
+        throttle: parsed.throttle,
+        steer: parsed.steer,
+        brake: parsed.brake,
+        clutch: parsed.clutch,
+        gear: parsed.gear,
+        engineRPM: parsed.engineRPM,
+        drs: parsed.drs,
+        revLightsPercent: parsed.revLightsPercent,
+        revLightsBitValue: parsed.revLightsBitValue,
+        engineTemperature: parsed.engineTemperature,
+        brakesTemperature: parsed.brakesTemperature,
+        tyresSurfaceTemperature: parsed.tyresSurfaceTemperature,
+        tyresInnerTemperature: parsed.tyresInnerTemperature,
+        tyresPressure: parsed.tyresPressure,
+        surfaceType: parsed.surfaceType
+    };
 }

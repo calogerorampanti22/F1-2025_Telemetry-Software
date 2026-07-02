@@ -1,5 +1,5 @@
-export function handleSession (parsed: any, pendingRef: any) {
-    pendingRef.current.sessionData = {
+export function handleSession (parsed: any, stateRef: any) {
+    stateRef.current.sessionData = {
         trackId: parsed.trackId,
         trackLength: parsed.trackLength
     };

@@ -1,5 +1,5 @@
 .timing-tower-container {
-    width: 600px;
+    width: 100%;
     background: rgba(15, 15, 20, 0.7);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
@@ -100,6 +100,7 @@
 
 .driver-name {
     flex-grow: 1;
+    min-width: 0; /* Ensures the flex item can shrink smaller than its content */
     font-weight: 600;
     text-align: left;
     white-space: nowrap;
@@ -120,7 +121,7 @@
 }
 
 .gap-front {
-    width: 150px;
+    width: 100px;
     text-align: right;
     font-variant-numeric: tabular-nums;
     color: #aaaaaa;

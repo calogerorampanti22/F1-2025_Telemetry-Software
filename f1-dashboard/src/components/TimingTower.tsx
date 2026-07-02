@@ -1,19 +1,18 @@
 import React from 'react';
-import type { LapData, ParticipantData } from '../telemetry/types';
+import type { Driver } from '../telemetry/types';
 import './TimingTower.css';
 import { TEAM_COLORS } from '../data/teamColors';
 
 interface TimingTowerProps {
-    allCars: LapData[];
+    drivers: Driver[];
     playerCarIndex: number;
-    participants?: ParticipantData[];
 }
 
-export const TimingTower: React.FC<TimingTowerProps> = ({ allCars = [], playerCarIndex, participants = [] }) => {
+export const TimingTower: React.FC<TimingTowerProps> = ({ drivers = [], playerCarIndex }) => {
     // Filter active cars and sort by position
-    const sortedCars = [...allCars]
-        .filter(car => car && car.carPosition > 0 && car.carPosition <= 22)
-        .sort((a, b) => a.carPosition - b.carPosition);
+    const sortedDrivers = [...drivers]
+        .filter(d => d && d.lapData && d.lapData.carPosition > 0 && d.lapData.carPosition <= 22)
+        .sort((a, b) => (a.lapData?.carPosition || 0) - (b.lapData?.carPosition || 0));
 
     const formatGap = (rawMs: number, rawMins: number) => {
         if (rawMs === undefined || rawMins === undefined) return '';
@@ -21,14 +20,9 @@ export const TimingTower: React.FC<TimingTowerProps> = ({ allCars = [], playerCa
         const ms = Number(rawMs) || 0;
         const mins = Number(rawMins) || 0;
 
-        // In F1 telemetry, 65535 for uint16 and 255 for uint8 often mean "invalid" or "not set"
-        if (ms === 65535 || mins === 255) return '';
-
-        // Se i minuti sono esagerati (es. > 10), probabilmente c'è un disallineamento della struct (es. F1 23 vs F1 24)
-        const safeMins = mins > 10 ? 0 : mins;
-
-        const totalMs = (safeMins * 60000) + ms;
-        if (totalMs === 0) return '';
+        // RIMOSSI i controlli su 65535 e 255 che probabilmente nascondevano tempi validi!
+        const totalMs = (mins * 60000) + ms;
+        if (totalMs === 0) return '+0.000';
 
         if (totalMs >= 60000) {
             const m = Math.floor(totalMs / 60000);
@@ -47,11 +41,12 @@ export const TimingTower: React.FC<TimingTowerProps> = ({ allCars = [], playerCa
                 <h2>LEADERBOARD</h2>
             </div>
             <div className="timing-tower-list">
-                {sortedCars.map((car) => {
-                    const isPlayer = car.carIndex === playerCarIndex;
-                    const participant = participants[car.carIndex];
+                {sortedDrivers.map((driver) => {
+                    const car = driver.lapData!;
+                    const isPlayer = driver.carIndex === playerCarIndex;
+                    const participant = driver.participant;
 
-                    const driverName = participant && participant.name ? participant.name : `CAR ${car.carIndex + 1}`;
+                    const driverName = participant && participant.name ? participant.name : `CAR ${driver.carIndex + 1}`;
                     const teamId = participant ? participant.teamId : -1;
                     const teamColor = TEAM_COLORS[teamId] || '#888888';
 
@@ -64,11 +59,11 @@ export const TimingTower: React.FC<TimingTowerProps> = ({ allCars = [], playerCa
                     }
 
                     return (
-                        <div key={car.carIndex} className={`timing-tower-row ${isPlayer ? 'player-row' : ''}`}>
+                        <div key={driver.carIndex} className={`timing-tower-row ${isPlayer ? 'player-row' : ''}`}>
                             <div className="position">{car.carPosition}</div>
                             <div className="team-color-bar" style={{ backgroundColor: teamColor }}></div>
                             <div className="driver-name" title={driverName}>
-                                {driverName} {isPlayer && '(YOU)'}
+                                {driverName} {isPlayer}
                             </div>
                             <div className="gap" title="Gap to Leader">
                                 {gapStr}

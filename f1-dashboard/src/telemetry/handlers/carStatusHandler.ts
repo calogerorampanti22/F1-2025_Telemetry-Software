@@ -1,9 +1,11 @@
-export function handleCarStatus(parsed: any, trackState: any, pendingRef: any) {
+export function handleCarStatus(parsed: any, trackState: any, stateRef: any) {
     trackState.current.visualTyreCompound = parsed.visualTyreCompound;
     trackState.current.tyresAgeLaps = parsed.tyresAgeLaps;
 
-    pendingRef.current.carStatus = {
-        tractionControl: parsed.tractionControl,
+    const playerIndex = stateRef.current.playerCarIndex ?? 0;
+    if (stateRef.current.drivers[playerIndex]) {
+        stateRef.current.drivers[playerIndex].carStatus = {
+            tractionControl: parsed.tractionControl,
         antiLockBrakes: parsed.antiLockBrakes,
         fuelMix: parsed.fuelMix,
         frontBrakeBias: parsed.frontBrakeBias,
@@ -25,8 +27,9 @@ export function handleCarStatus(parsed: any, trackState: any, pendingRef: any) {
         ersStoreEnergy: parsed.ersStoreEnergy,
         ersDeployMode: parsed.ersDeployMode,
         ersHarvestedThisLapMGUK: parsed.ersHarvestedThisLapMGUK,
-        ersHarvestedThisLapMGUH: parsed.ersHarvestedThisLapMGUH,
-        ersDeployedThisLap: parsed.ersDeployedThisLap,
-        networkPaused: parsed.networkPaused
-    };
+            ersHarvestedThisLapMGUH: parsed.ersHarvestedThisLapMGUH,
+            ersDeployedThisLap: parsed.ersDeployedThisLap,
+            networkPaused: parsed.networkPaused
+        };
+    }
 }

@@ -184,7 +184,9 @@ const containerStyle: React.CSSProperties = {
   backgroundColor: '#111', 
   padding: '30px 20px', 
   borderRadius: '15px', 
-  border: '1px solid #222' 
+  border: '1px solid #222',
+  height: '100%',
+  boxSizing: 'border-box'
 };
 
 const layoutGrid: React.CSSProperties = {

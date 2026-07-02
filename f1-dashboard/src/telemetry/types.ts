@@ -1,7 +1,7 @@
 import type { SectorDisplay } from "./formatters";
 
-// Telemetry Data Interface
-export interface TelemetryData {
+// Telemetry Data Interface for Player
+export interface PlayerTelemetry {
     speed: number;
     throttle: number;
     steer: number;
@@ -19,21 +19,22 @@ export interface TelemetryData {
     tyresInnerTemperature: [number, number, number, number];
     tyresPressure: [number, number, number, number];
     surfaceType: [number, number, number, number];
+}
 
-    // Car Status object
-    carStatus: CarStatusData;
+// Domain Object representing a single driver
+export interface Driver {
+    carIndex: number;
+    participant?: ParticipantData;
+    lapData?: LapData;
+    carStatus?: CarStatusData; 
+    telemetry?: PlayerTelemetry; 
+}
 
-    // Lap Data object (player's data for HUD)
-    lapData: LapData;
-
-    // All cars lap data for the Timing Tower
-    allCarsLapData: LapData[];
-
-    // Session Data object
+// Global App State
+export interface AppState {
+    drivers: Driver[];
     sessionData: SessionData;
-
-    // Participants data (driver info, team, etc.)
-    participants: ParticipantData[];
+    playerCarIndex: number;
 }
 
 export interface ParticipantData {

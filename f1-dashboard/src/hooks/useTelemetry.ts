@@ -7,46 +7,28 @@ import { handleLapData } from '../telemetry/handlers/lapDataHandler';
 import { handleSession } from '../telemetry/handlers/sessionHandler';
 
 import type {
-    TelemetryData,
-    CarStatusData,
-    LapData,
+    AppState,
     SessionData,
     LapHistoryEntry
 } from '../telemetry/types';
 
 export function useTelemetry() {
-    const [data, setData] = useState<TelemetryData>(() => ({
-        speed: 0,
-        throttle: 0,
-        steer: 0,
-        brake: 0,
-        clutch: 0,
-        gear: 0,
-        engineRPM: 0,
-        drs: false,
-        revLightsPercent: 0,
-        revLightsBitValue: 0,
-        engineTemperature: 0,
-
-        brakesTemperature: [0, 0, 0, 0],
-        tyresSurfaceTemperature: [0, 0, 0, 0],
-        tyresInnerTemperature: [0, 0, 0, 0],
-        tyresPressure: [0, 0, 0, 0],
-        surfaceType: [0, 0, 0, 0],
-
-        carStatus: {} as CarStatusData,
-        lapData: {} as LapData,
-        allCarsLapData: [],
+    // Initial global state
+    const [state, setState] = useState<AppState>(() => ({
+        drivers: Array.from({ length: 22 }, (_, i) => ({ carIndex: i })),
         sessionData: {} as SessionData,
-        participants: []
+        playerCarIndex: 0
     }));
 
     const [isConnected, setIsConnected] = useState(false);
-
     const wsRef = useRef<WebSocket | null>(null);
 
-    // buffer realtime
-    const pendingRef = useRef<Partial<TelemetryData>>({});
+    // Persistent reference to the current state for handlers to mutate
+    const stateRef = useRef<AppState>({
+        drivers: Array.from({ length: 22 }, (_, i) => ({ carIndex: i })),
+        sessionData: {} as SessionData,
+        playerCarIndex: 0
+    });
 
     const personalBests = useRef({
         lap: Infinity,
@@ -89,25 +71,21 @@ export function useTelemetry() {
         wsRef.current = ws;
 
         let animationFrameId: number | null = null;
+        let hasPendingChanges = false;
 
         const flush = () => {
-            setData(prev => {
-                // evita update inutile
-                if (Object.keys(pendingRef.current).length === 0) {
-                    return prev;
-                }
+            if (!hasPendingChanges) return;
+            hasPendingChanges = false;
 
-                const next = {
-                    ...prev,
-                    ...pendingRef.current
-                };
-
-                pendingRef.current = {};
-                return next;
+            setState({
+                drivers: [...stateRef.current.drivers],
+                sessionData: { ...stateRef.current.sessionData },
+                playerCarIndex: stateRef.current.playerCarIndex
             });
         };
 
         const scheduleFlush = () => {
+            hasPendingChanges = true;
             if (animationFrameId) return;
 
             animationFrameId = requestAnimationFrame(() => {
@@ -118,7 +96,6 @@ export function useTelemetry() {
 
         ws.onopen = () => setIsConnected(true);
         ws.onclose = () => setIsConnected(false);
-
         ws.onerror = () => setIsConnected(false);
 
         ws.onmessage = (event) => {
@@ -126,23 +103,29 @@ export function useTelemetry() {
 
             switch (parsed.type) {
                 case 'telemetry':
-                    handleTelemetry(parsed, pendingRef);
+                    handleTelemetry(parsed, stateRef);
                     break;
 
                 case 'carStatus':
-                    handleCarStatus(parsed, trackState, pendingRef);
+                    handleCarStatus(parsed, trackState, stateRef);
                     break;
 
                 case 'lapData':
-                    handleLapData(parsed, trackState, personalBests, sessionBests, gridCarsState, lapHistory, pendingRef);
+                    handleLapData(parsed, trackState, personalBests, sessionBests, gridCarsState, lapHistory, stateRef);
                     break;
 
                 case 'session':
-                    handleSession(parsed, pendingRef);
+                    handleSession(parsed, stateRef);
                     break;
 
                 case 'participants':
-                    pendingRef.current.participants = parsed.drivers;
+                    // Update participants in drivers array
+                    const drivers = parsed.drivers || [];
+                    for (let i = 0; i < drivers.length; i++) {
+                        if (stateRef.current.drivers[i]) {
+                            stateRef.current.drivers[i].participant = drivers[i];
+                        }
+                    }
                     break;
             }
 
@@ -155,5 +138,5 @@ export function useTelemetry() {
         };
     }, []);
 
-    return { data, isConnected };
+    return { state, isConnected };
 }

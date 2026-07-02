@@ -106,7 +106,9 @@ const centralSection: React.CSSProperties = {
   backgroundColor: '#111', 
   borderRadius: '20px', 
   border: '1px solid #222',
-  gap: '40px' // Spazio tra i pedali e il blocco centrale
+  gap: '40px', // Spazio tra i pedali e il blocco centrale
+  height: '100%',
+  boxSizing: 'border-box'
 };
 
 const coreInfo: React.CSSProperties = {

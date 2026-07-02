@@ -7,7 +7,7 @@ export function handleLapData(
     sessionBests: any,
     gridCarsState: any,
     lapHistory: any,
-    pendingRef: any
+    stateRef: any
 ) {
     const cars = parsed.cars;
     const playerCarIndex = parsed.playerCarIndex;
@@ -16,7 +16,13 @@ export function handleLapData(
 
     if (cars && cars.length > 0) {
         playerLap = cars[playerCarIndex];
-        pendingRef.current.allCarsLapData = cars;
+        stateRef.current.playerCarIndex = playerCarIndex;
+        
+        for (let i = 0; i < cars.length; i++) {
+            if (stateRef.current.drivers[i]) {
+                stateRef.current.drivers[i].lapData = cars[i];
+            }
+        }
 
         // Safely initialize sessionBests if corrupted by Fast Refresh
         if (!sessionBests.current || typeof sessionBests.current.s1 !== 'number') {
@@ -67,7 +73,10 @@ export function handleLapData(
     } else {
         // Fallback for old parser executable
         playerLap = parsed;
-        pendingRef.current.allCarsLapData = [parsed];
+        stateRef.current.playerCarIndex = 0;
+        if (stateRef.current.drivers[0]) {
+            stateRef.current.drivers[0].lapData = parsed;
+        }
     }
 
     if (!playerLap) return;
@@ -192,15 +201,17 @@ export function handleLapData(
         ? trackState.current.frozenS3 || empty
         : empty;
 
-    pendingRef.current.lapData = {
-        ...playerLap,
-        bestLapTimeInMS:
-            personalBests.current.lap === Infinity
-                ? 0
-                : personalBests.current.lap,
-        sectorData: [s1, s2, s3],
-        lapHistory: [...lapHistory.current]
-    };
+    if (stateRef.current.drivers[playerCarIndex ?? 0]) {
+        stateRef.current.drivers[playerCarIndex ?? 0].lapData = {
+            ...playerLap,
+            bestLapTimeInMS:
+                personalBests.current.lap === Infinity
+                    ? 0
+                    : personalBests.current.lap,
+            sectorData: [s1, s2, s3],
+            lapHistory: [...lapHistory.current]
+        };
+    }
 
     // =========================
     // BEST LAP UPDATE
